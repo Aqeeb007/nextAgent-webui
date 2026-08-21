@@ -33,6 +33,8 @@ No test framework is configured (no test script, no Jest/Vitest/Playwright depen
 
 Path alias: `@/*` → `src/*` (tsconfig.json), matching the shadcn aliases in components.json (`@/components`, `@/lib`, `@/hooks`, etc.).
 
+**API calls go through `apiClient` + TanStack Query, not raw `fetch`/`axios`.** [src/lib/api/client.ts](src/lib/api/client.ts) exports the configured `apiClient` (axios instance, base URL from [src/config/env.ts](src/config/env.ts)'s `NEXT_PUBLIC_API_URL`). [src/lib/api/interceptors.ts](src/lib/api/interceptors.ts) attaches the bearer token from [src/lib/storage/token.ts](src/lib/storage/token.ts) to every request and clears it on a 401 response — call `setToken()` there after a successful login/signup, don't roll a separate auth-header mechanism per feature. Endpoint path strings live in [src/lib/api/endpoints.ts](src/lib/api/endpoints.ts), grouped by feature (e.g. `endpoints.auth.login`) — add new routes there rather than inlining path strings in a feature's `services/`. [src/lib/query/query-provider.tsx](src/lib/query/query-provider.tsx) wraps the whole app in `layout.tsx` with a `QueryClientProvider` (SSR-safe client singleton via `getQueryClient()` in `query-client.ts`); React Query Devtools are mounted but only render when `NODE_ENV === "development"`. Data-fetching hooks belong in each feature's `hooks/` or `services/`, built on `apiClient` + `useQuery`/`useMutation` — see the "Community libraries" guidance in `node_modules/next/dist/docs/01-app/01-getting-started/06-fetching-data.md`, which is Next's own recommended pattern for client-side fetching in the App Router.
+
 ### Target architecture
 
 New code should follow this feature-based layout (create directories as needed — most don't exist yet):
