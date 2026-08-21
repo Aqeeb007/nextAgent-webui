@@ -27,7 +27,7 @@ export function LoginForm({ onCreateAccount }: LoginFormProps) {
         email: String(formData.get("email")),
         password: String(formData.get("password")),
       },
-      { onSuccess: () => router.push("/") }
+      { onSuccess: () => router.push("/dashboard") }
     );
   }
 

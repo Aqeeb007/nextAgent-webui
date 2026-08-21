@@ -29,7 +29,7 @@ export function SignupForm({ onLogin }: SignupFormProps) {
         email: String(formData.get("email")),
         password: String(formData.get("password")),
       },
-      { onSuccess: () => router.push("/") }
+      { onSuccess: () => router.push("/dashboard") }
     );
   }
 

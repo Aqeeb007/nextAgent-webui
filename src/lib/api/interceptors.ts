@@ -6,13 +6,10 @@ import type {
 } from "axios";
 
 import { env } from "@/config/env";
+import { applyRefresh, clearAuthSession } from "@/features/auth/services/session";
 import type { RefreshTokenResponse } from "@/features/auth/types/auth.types";
 import { endpoints } from "@/lib/api/endpoints";
-import {
-  clearRefreshToken,
-  getRefreshToken,
-  setRefreshToken,
-} from "@/lib/storage/refresh-token";
+import { getRefreshToken } from "@/lib/storage/refresh-token";
 import { useAuthStore } from "@/stores/auth.store";
 
 interface RetryableRequestConfig extends InternalAxiosRequestConfig {
@@ -35,12 +32,10 @@ async function refreshSession(): Promise<string | null> {
       `${env.apiUrl}${endpoints.auth.refresh}`,
       { refreshToken }
     );
-    useAuthStore.getState().setAccessToken(data.accessToken);
-    setRefreshToken(data.refreshToken);
+    applyRefresh(data);
     return data.accessToken;
   } catch {
-    useAuthStore.getState().clearSession();
-    clearRefreshToken();
+    clearAuthSession();
     return null;
   }
 }

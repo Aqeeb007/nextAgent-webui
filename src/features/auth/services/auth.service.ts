@@ -31,3 +31,13 @@ export async function refreshAccessToken(refreshToken: string) {
   );
   return data;
 }
+
+/**
+ * Revokes a specific refresh token server-side. Takes the token directly
+ * (like `refreshAccessToken`) rather than relying on the access token /
+ * bearer header, so logging out still works even if the access token is
+ * missing or expired.
+ */
+export async function logout(refreshToken: string) {
+  await publicApiClient.post(endpoints.auth.logout, { refreshToken });
+}
