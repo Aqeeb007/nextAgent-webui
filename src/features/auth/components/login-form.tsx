@@ -1,12 +1,36 @@
+"use client";
+
+import { Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import type { FormEvent } from "react";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useLoginMutation } from "@/features/auth/hooks/use-login";
+import { getErrorMessage } from "@/lib/api/error";
 
 interface LoginFormProps {
   onCreateAccount?: () => void;
 }
 
 export function LoginForm({ onCreateAccount }: LoginFormProps) {
+  const router = useRouter();
+  const { mutate, isPending, error } = useLoginMutation();
+
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+
+    mutate(
+      {
+        email: String(formData.get("email")),
+        password: String(formData.get("password")),
+      },
+      { onSuccess: () => router.push("/") }
+    );
+  }
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-1">
@@ -16,7 +40,7 @@ export function LoginForm({ onCreateAccount }: LoginFormProps) {
         </p>
       </div>
 
-      <form onSubmit={(event) => event.preventDefault()} className="flex flex-col gap-4">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="login-email">Email</Label>
           <Input
@@ -41,8 +65,19 @@ export function LoginForm({ onCreateAccount }: LoginFormProps) {
           />
         </div>
 
-        <Button type="submit" className="mt-2 h-10 w-full text-sm">
-          Log in
+        {error && (
+          <p role="alert" className="text-sm text-destructive">
+            {getErrorMessage(error)}
+          </p>
+        )}
+
+        <Button
+          type="submit"
+          disabled={isPending}
+          className="mt-2 h-10 w-full text-sm"
+        >
+          {isPending && <Loader2 className="animate-spin" />}
+          {isPending ? "Logging in…" : "Log in"}
         </Button>
       </form>
 

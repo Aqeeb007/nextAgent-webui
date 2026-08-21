@@ -1,12 +1,38 @@
+"use client";
+
+import { Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import type { FormEvent } from "react";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useRegisterMutation } from "@/features/auth/hooks/use-register";
+import { getErrorMessage } from "@/lib/api/error";
 
 interface SignupFormProps {
   onLogin?: () => void;
 }
 
 export function SignupForm({ onLogin }: SignupFormProps) {
+  const router = useRouter();
+  const { mutate, isPending, error } = useRegisterMutation();
+
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+
+    mutate(
+      {
+        firstName: String(formData.get("firstName")),
+        lastName: String(formData.get("lastName")),
+        email: String(formData.get("email")),
+        password: String(formData.get("password")),
+      },
+      { onSuccess: () => router.push("/") }
+    );
+  }
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-1">
@@ -16,17 +42,31 @@ export function SignupForm({ onLogin }: SignupFormProps) {
         </p>
       </div>
 
-      <form onSubmit={(event) => event.preventDefault()} className="flex flex-col gap-4">
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="signup-name">Full name</Label>
-          <Input
-            id="signup-name"
-            name="name"
-            type="text"
-            placeholder="Ada Lovelace"
-            autoComplete="name"
-            required
-          />
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <div className="grid grid-cols-2 gap-3">
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="signup-first-name">First name</Label>
+            <Input
+              id="signup-first-name"
+              name="firstName"
+              type="text"
+              placeholder="Ada"
+              autoComplete="given-name"
+              required
+            />
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="signup-last-name">Last name</Label>
+            <Input
+              id="signup-last-name"
+              name="lastName"
+              type="text"
+              placeholder="Lovelace"
+              autoComplete="family-name"
+              required
+            />
+          </div>
         </div>
 
         <div className="flex flex-col gap-1.5">
@@ -49,12 +89,24 @@ export function SignupForm({ onLogin }: SignupFormProps) {
             type="password"
             placeholder="Create a password"
             autoComplete="new-password"
+            minLength={8}
             required
           />
         </div>
 
-        <Button type="submit" className="mt-2 h-10 w-full text-sm">
-          Create account
+        {error && (
+          <p role="alert" className="text-sm text-destructive">
+            {getErrorMessage(error)}
+          </p>
+        )}
+
+        <Button
+          type="submit"
+          disabled={isPending}
+          className="mt-2 h-10 w-full text-sm"
+        >
+          {isPending && <Loader2 className="animate-spin" />}
+          {isPending ? "Creating account…" : "Create account"}
         </Button>
       </form>
 
