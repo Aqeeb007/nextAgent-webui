@@ -24,17 +24,17 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useAddMember } from "@/features/organizations/hooks/use-add-member";
-import type { OrganizationMemberRole } from "@/features/organizations/types/organization.types";
+import type { InvitableRole } from "@/features/organizations/types/organization.types";
 import { getErrorMessage } from "@/lib/api/error";
 
-const ROLE_LABELS: Record<OrganizationMemberRole, string> = {
+const ROLE_LABELS: Record<InvitableRole, string> = {
   member: "Member",
   admin: "Admin",
 };
 
 export function AddMemberDialog() {
   const [open, setOpen] = useState(false);
-  const [role, setRole] = useState<OrganizationMemberRole>("member");
+  const [role, setRole] = useState<InvitableRole>("member");
   const { mutate, isPending, error, reset } = useAddMember();
 
   function handleOpenChange(nextOpen: boolean) {
@@ -94,11 +94,11 @@ export function AddMemberDialog() {
             <Label htmlFor="member-role">Role</Label>
             <Select
               value={role}
-              onValueChange={(value) => setRole(value as OrganizationMemberRole)}
+              onValueChange={(value) => setRole(value as InvitableRole)}
             >
               <SelectTrigger id="member-role" className="w-full">
                 <SelectValue placeholder="Select a role">
-                  {(value: OrganizationMemberRole) => ROLE_LABELS[value]}
+                  {(value: InvitableRole) => ROLE_LABELS[value]}
                 </SelectValue>
               </SelectTrigger>
               <SelectContent>

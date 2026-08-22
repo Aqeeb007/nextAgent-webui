@@ -3,6 +3,7 @@ import { endpoints } from "@/lib/api/endpoints";
 
 import type {
   AddOrganizationMemberPayload,
+  AddOrganizationMemberResult,
   Organization,
   OrganizationMember,
 } from "../types/organization.types";
@@ -29,7 +30,7 @@ export async function listMembers() {
 }
 
 export async function addMember(payload: AddOrganizationMemberPayload) {
-  const { data } = await apiClient.post<OrganizationMember>(
+  const { data } = await apiClient.post<AddOrganizationMemberResult>(
     endpoints.organizations.members,
     payload
   );
