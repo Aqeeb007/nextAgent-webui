@@ -5,4 +5,9 @@ export const endpoints = {
     refresh: "/auth/refresh",
     logout: "/auth/logout",
   },
+  organizations: {
+    list: "/organizations",
+    current: "/organizations/current",
+    members: "/organizations/members",
+  },
 } as const;

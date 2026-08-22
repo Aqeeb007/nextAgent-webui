@@ -1,43 +1,15 @@
-import axios from "axios";
 import type {
   AxiosError,
   AxiosInstance,
   InternalAxiosRequestConfig,
 } from "axios";
 
-import { env } from "@/config/env";
-import { applyRefresh, clearAuthSession } from "@/features/auth/services/session";
-import type { RefreshTokenResponse } from "@/features/auth/types/auth.types";
-import { endpoints } from "@/lib/api/endpoints";
-import { getRefreshToken } from "@/lib/storage/refresh-token";
+import { refreshSession } from "@/features/auth/services/session";
 import { useAuthStore } from "@/stores/auth.store";
+import { useOrganizationStore } from "@/stores/organization.store";
 
 interface RetryableRequestConfig extends InternalAxiosRequestConfig {
   _retried?: boolean;
-}
-
-let refreshPromise: Promise<string | null> | null = null;
-
-/**
- * Raw axios call, deliberately bypassing `apiClient`/`publicApiClient`: this
- * runs from inside the response interceptor, so it must not carry a stale
- * bearer header or itself be subject to the retry-on-401 logic below.
- */
-async function refreshSession(): Promise<string | null> {
-  const refreshToken = getRefreshToken();
-  if (!refreshToken) return null;
-
-  try {
-    const { data } = await axios.post<RefreshTokenResponse>(
-      `${env.apiUrl}${endpoints.auth.refresh}`,
-      { refreshToken }
-    );
-    applyRefresh(data);
-    return data.accessToken;
-  } catch {
-    clearAuthSession();
-    return null;
-  }
 }
 
 export function attachInterceptors(client: AxiosInstance) {
@@ -46,6 +18,12 @@ export function attachInterceptors(client: AxiosInstance) {
     if (accessToken) {
       config.headers.Authorization = `Bearer ${accessToken}`;
     }
+
+    const selectedOrgId = useOrganizationStore.getState().selectedOrgId;
+    if (selectedOrgId) {
+      config.headers["X-Organization-Id"] = selectedOrgId;
+    }
+
     return config;
   });
 
@@ -59,11 +37,7 @@ export function attachInterceptors(client: AxiosInstance) {
       }
 
       config._retried = true;
-      refreshPromise ??= refreshSession().finally(() => {
-        refreshPromise = null;
-      });
-
-      const accessToken = await refreshPromise;
+      const accessToken = await refreshSession();
       if (!accessToken) {
         return Promise.reject(error);
       }
