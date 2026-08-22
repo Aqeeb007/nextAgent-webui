@@ -10,4 +10,9 @@ export const endpoints = {
     current: "/organizations/current",
     members: "/organizations/members",
   },
+  tools: {
+    list: "/tools",
+    detail: (id: string) => `/tools/${id}`,
+    test: (id: string) => `/tools/${id}/test`,
+  },
 } as const;
