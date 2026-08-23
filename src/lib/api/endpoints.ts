@@ -22,5 +22,9 @@ export const endpoints = {
       list: (agentId: string) => `/agents/${agentId}/tools`,
       detail: (agentId: string, toolId: string) => `/agents/${agentId}/tools/${toolId}`,
     },
+    // One conversation per (agent, user) — GET reads history, POST sends a
+    // message (auto-creating the conversation on first send), DELETE resets
+    // it. Same URL for all three; the verb does the work.
+    chat: (agentId: string) => `/agents/${agentId}/chat`,
   },
 } as const;

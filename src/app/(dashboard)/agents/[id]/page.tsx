@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AgentFormDialog } from "@/features/agents/components/agent-form-dialog";
 import { AgentToolsPanel } from "@/features/agents/components/agent-tools-panel";
 import { useAgent } from "@/features/agents/hooks/use-agent";
+import { ChatPanel } from "@/features/conversations/components/chat-panel";
 import { useCurrentOrganization } from "@/features/organizations/hooks/use-current-organization";
 
 export default function AgentDetailPage() {
@@ -115,9 +116,9 @@ export default function AgentDetailPage() {
         </TabsContent>
 
         <TabsContent value="conversations" className="pt-4">
-          <p className="text-sm text-muted-foreground">
-            Conversation history for this agent is coming soon.
-          </p>
+          <div className="flex h-[min(70vh,720px)] min-h-[420px] flex-col overflow-hidden rounded-xl bg-card ring-1 ring-foreground/10">
+            <ChatPanel agentId={agent.id} />
+          </div>
         </TabsContent>
       </Tabs>
 
