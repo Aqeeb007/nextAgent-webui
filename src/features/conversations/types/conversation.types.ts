@@ -62,3 +62,14 @@ export interface SendMessageResult {
   conversationId: string;
   message: string;
 }
+
+// Live progress emitted over Socket.IO while a POST .../messages call is in
+// flight (ChatGateway.emitStep, mirroring ChatService's ChatStepEvent) — the
+// event name on the wire equals `type`, the payload is the object itself.
+// Purely a UI progress indicator; the persisted messages still come from
+// refetching after the HTTP call resolves.
+export type ChatStepEvent =
+  | { type: "thinking" }
+  | { type: "tool_call"; toolName: string }
+  | { type: "tool_result"; toolName: string; result: unknown }
+  | { type: "done"; content: string };

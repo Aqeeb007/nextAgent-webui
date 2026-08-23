@@ -1,20 +1,36 @@
 "use client";
 
-import { MessagesSquare } from "lucide-react";
+import { MessagesSquare, Wrench } from "lucide-react";
 import { useEffect, useRef } from "react";
 
 import { EmptyState } from "@/components/common/EmptyState";
 import { ErrorState } from "@/components/common/ErrorState";
 import { Loading } from "@/components/common/Loading";
+import { Badge } from "@/components/ui/badge";
 import { MessageBubble } from "@/features/conversations/components/message-bubble";
 import { MessageComposer } from "@/features/conversations/components/message-composer";
 import { useChatMessages } from "@/features/conversations/hooks/use-chat-messages";
+import { useConversationSocket } from "@/features/conversations/hooks/use-conversation-socket";
 import { useSendMessage } from "@/features/conversations/hooks/use-send-message";
+import type { ChatStepEvent } from "@/features/conversations/types/conversation.types";
 import { getErrorMessage } from "@/lib/api/error";
 
 interface ChatPanelProps {
   agentId: string;
   conversationId: string | null;
+}
+
+function describeStep(step: ChatStepEvent | null): string {
+  switch (step?.type) {
+    case "tool_call":
+      return `Calling ${step.toolName}…`;
+    case "tool_result":
+      return `Got a result from ${step.toolName}…`;
+    case "done":
+      return "Finishing…";
+    default:
+      return "Thinking…";
+  }
 }
 
 export function ChatPanel({ agentId, conversationId }: ChatPanelProps) {
@@ -25,14 +41,16 @@ export function ChatPanel({ agentId, conversationId }: ChatPanelProps) {
     refetch,
   } = useChatMessages(agentId, conversationId);
   const sendMessage = useSendMessage(agentId, conversationId ?? "");
+  const { connected, step, resetStep } = useConversationSocket(agentId, conversationId);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ block: "end" });
-  }, [history?.messages.length]);
+  }, [history?.messages.length, sendMessage.isPending]);
 
   function handleSend(message: string) {
     if (!conversationId) return;
+    resetStep();
     sendMessage.mutate({ message });
   }
 
@@ -57,6 +75,11 @@ export function ChatPanel({ agentId, conversationId }: ChatPanelProps) {
 
   return (
     <div className="flex h-full flex-col">
+      <div className="flex items-center justify-between border-b border-border px-4 py-2.5">
+        <p className="text-sm font-medium text-foreground">Conversation</p>
+        {connected && <Badge variant="live">Live</Badge>}
+      </div>
+
       <div className="flex-1 overflow-y-auto p-4">
         {history.messages.length === 0 ? (
           <p className="py-8 text-center text-sm text-muted-foreground">
@@ -69,8 +92,9 @@ export function ChatPanel({ agentId, conversationId }: ChatPanelProps) {
             ))}
             {sendMessage.isPending && (
               <div className="flex justify-start">
-                <div className="rounded-xl bg-muted/60 px-3.5 py-2.5 text-sm text-muted-foreground">
-                  Thinking…
+                <div className="flex items-center gap-1.5 rounded-xl bg-muted/60 px-3.5 py-2.5 text-sm text-muted-foreground">
+                  {step?.type === "tool_call" && <Wrench className="size-3.5" />}
+                  {describeStep(step)}
                 </div>
               </div>
             )}

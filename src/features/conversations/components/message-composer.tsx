@@ -36,7 +36,11 @@ export function MessageComposer({ onSend, disabled = false }: MessageComposerPro
         onChange={(event) => setValue(event.target.value)}
         onKeyDown={handleKeyDown}
         placeholder="Message this agent…"
-        disabled={disabled}
+        // Deliberately not disabled while `disabled` (a send in flight) —
+        // disabling would blur the field, and re-enabling it afterwards
+        // doesn't restore focus, forcing an extra click to keep typing.
+        // handleSend/handleKeyDown already guard against sending while
+        // disabled, so this only lets the next message be drafted early.
         rows={1}
         className="max-h-40 min-h-10 flex-1 resize-none"
       />
