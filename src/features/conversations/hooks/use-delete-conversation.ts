@@ -2,17 +2,17 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { useOrganizationStore } from "@/stores/organization.store";
 
-import { resetChat } from "../services/conversation.service";
+import { deleteConversation } from "../services/conversation.service";
 
-export function useResetChat(agentId: string) {
+export function useDeleteConversation(agentId: string) {
   const queryClient = useQueryClient();
   const selectedOrgId = useOrganizationStore((state) => state.selectedOrgId);
 
   return useMutation({
-    mutationFn: () => resetChat(agentId),
+    mutationFn: (conversationId: string) => deleteConversation(agentId, conversationId),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["agents", selectedOrgId, agentId, "chat"],
+        queryKey: ["agents", selectedOrgId, agentId, "conversations"],
         exact: true,
       });
     },

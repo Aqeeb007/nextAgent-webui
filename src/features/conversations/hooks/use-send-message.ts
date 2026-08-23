@@ -2,32 +2,40 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { useOrganizationStore } from "@/stores/organization.store";
 
-import { sendChatMessage } from "../services/conversation.service";
+import { sendMessage } from "../services/conversation.service";
 import type { ChatHistory, ChatMessage } from "../types/conversation.types";
 
-interface SendChatMessageVariables {
+interface SendMessageVariables {
   message: string;
 }
 
-export function useSendChatMessage(agentId: string) {
+export function useSendMessage(agentId: string, conversationId: string) {
   const queryClient = useQueryClient();
   const selectedOrgId = useOrganizationStore((state) => state.selectedOrgId);
-  const queryKey = ["agents", selectedOrgId, agentId, "chat"];
+  const messagesKey = [
+    "agents",
+    selectedOrgId,
+    agentId,
+    "conversations",
+    conversationId,
+    "messages",
+  ];
+  const listKey = ["agents", selectedOrgId, agentId, "conversations"];
 
   return useMutation({
-    mutationFn: ({ message }: SendChatMessageVariables) =>
-      sendChatMessage(agentId, { message }),
+    mutationFn: ({ message }: SendMessageVariables) =>
+      sendMessage(agentId, conversationId, { message }),
     // Optimistically echo the user's message — POST only returns the final
     // assistant text, not the full row set (tool-call turns are persisted
     // but not echoed), so the authoritative view comes from refetching
-    // history on success rather than appending the response in place.
+    // messages on success rather than appending the response in place.
     onMutate: async ({ message }) => {
-      await queryClient.cancelQueries({ queryKey });
-      const previous = queryClient.getQueryData<ChatHistory>(queryKey);
+      await queryClient.cancelQueries({ queryKey: messagesKey });
+      const previous = queryClient.getQueryData<ChatHistory>(messagesKey);
 
       const optimisticMessage: ChatMessage = {
         id: `optimistic-${Date.now()}`,
-        conversationId: previous?.conversationId ?? "",
+        conversationId,
         role: "user",
         content: message,
         toolCallData: null,
@@ -35,8 +43,8 @@ export function useSendChatMessage(agentId: string) {
         createdAt: new Date().toISOString(),
       };
 
-      queryClient.setQueryData<ChatHistory>(queryKey, (old) => ({
-        conversationId: old?.conversationId ?? null,
+      queryClient.setQueryData<ChatHistory>(messagesKey, (old) => ({
+        conversationId,
         messages: [...(old?.messages ?? []), optimisticMessage],
       }));
 
@@ -44,11 +52,13 @@ export function useSendChatMessage(agentId: string) {
     },
     onError: (_error, _variables, context) => {
       if (context?.previous) {
-        queryClient.setQueryData(queryKey, context.previous);
+        queryClient.setQueryData(messagesKey, context.previous);
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey, exact: true });
+      queryClient.invalidateQueries({ queryKey: messagesKey, exact: true });
+      // Sending updates the conversation's preview/lastMessageAt in the list.
+      queryClient.invalidateQueries({ queryKey: listKey, exact: true });
     },
   });
 }

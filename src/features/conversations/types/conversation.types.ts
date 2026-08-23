@@ -1,5 +1,5 @@
-// Mirrors webapp-api's chat module (src/chat/*) — one conversation per
-// (agent, user), not a list the user picks between.
+// Mirrors webapp-api's chat module (src/chat/*) — multiple conversations per
+// (agent, user), each with its own message thread.
 export type MessageRole = "user" | "assistant" | "tool";
 
 export interface AssistantToolCallData {
@@ -30,10 +30,24 @@ export interface ChatMessage {
   createdAt: string;
 }
 
-// GET /agents/:agentId/chat — conversationId is null until the first
-// message is sent (ChatService.getHistory / ConversationsService.findOrCreate).
+export interface Conversation {
+  id: string;
+  agentId: string;
+  userId: string;
+  createdAt: string;
+}
+
+// GET /agents/:agentId/conversations — preview is the first user message
+// (truncated server-side), lastMessageAt is null for a conversation with no
+// messages yet (ConversationsService.listForUser).
+export interface ConversationListItem extends Conversation {
+  preview: string | null;
+  lastMessageAt: string | null;
+}
+
+// GET /agents/:agentId/conversations/:conversationId/messages
 export interface ChatHistory {
-  conversationId: string | null;
+  conversationId: string;
   messages: ChatMessage[];
 }
 
@@ -41,9 +55,9 @@ export interface SendMessagePayload {
   message: string;
 }
 
-// POST /agents/:agentId/chat — only the final assistant text, not the full
-// row set (tool-call/tool-result turns are persisted server-side but not
-// echoed here), so callers refetch history rather than append this in place.
+// POST .../messages — only the final assistant text, not the full row set
+// (tool-call/tool-result turns are persisted server-side but not echoed
+// here), so callers refetch the message list rather than append this in place.
 export interface SendMessageResult {
   conversationId: string;
   message: string;
