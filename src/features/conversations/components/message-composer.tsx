@@ -10,9 +10,14 @@ import { Textarea } from "@/components/ui/textarea";
 interface MessageComposerProps {
   onSend: (content: string) => void;
   disabled?: boolean;
+  placeholder?: string;
 }
 
-export function MessageComposer({ onSend, disabled = false }: MessageComposerProps) {
+export function MessageComposer({
+  onSend,
+  disabled = false,
+  placeholder = "Message this agent…",
+}: MessageComposerProps) {
   const [value, setValue] = useState("");
 
   function handleSend() {
@@ -35,7 +40,7 @@ export function MessageComposer({ onSend, disabled = false }: MessageComposerPro
         value={value}
         onChange={(event) => setValue(event.target.value)}
         onKeyDown={handleKeyDown}
-        placeholder="Message this agent…"
+        placeholder={placeholder}
         // Deliberately not disabled while `disabled` (a send in flight) —
         // disabling would blur the field, and re-enabling it afterwards
         // doesn't restore focus, forcing an extra click to keep typing.

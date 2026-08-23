@@ -9,9 +9,9 @@ import { Loading } from "@/components/common/Loading";
 import { Badge } from "@/components/ui/badge";
 import { MessageBubble } from "@/features/conversations/components/message-bubble";
 import { MessageComposer } from "@/features/conversations/components/message-composer";
+import { TypewriterText } from "@/features/conversations/components/typewriter-text";
 import { useChatMessages } from "@/features/conversations/hooks/use-chat-messages";
-import { useConversationSocket } from "@/features/conversations/hooks/use-conversation-socket";
-import { useSendMessage } from "@/features/conversations/hooks/use-send-message";
+import { useConversationChat } from "@/features/conversations/hooks/use-conversation-chat";
 import type { ChatStepEvent } from "@/features/conversations/types/conversation.types";
 import { getErrorMessage } from "@/lib/api/error";
 
@@ -26,8 +26,6 @@ function describeStep(step: ChatStepEvent | null): string {
       return `Calling ${step.toolName}…`;
     case "tool_result":
       return `Got a result from ${step.toolName}…`;
-    case "done":
-      return "Finishing…";
     default:
       return "Thinking…";
   }
@@ -40,19 +38,15 @@ export function ChatPanel({ agentId, conversationId }: ChatPanelProps) {
     isError,
     refetch,
   } = useChatMessages(agentId, conversationId);
-  const sendMessage = useSendMessage(agentId, conversationId ?? "");
-  const { connected, step, resetStep } = useConversationSocket(agentId, conversationId);
+  const { connected, step, sendMessage, isSending, sendError } = useConversationChat(
+    agentId,
+    conversationId
+  );
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ block: "end" });
-  }, [history?.messages.length, sendMessage.isPending]);
-
-  function handleSend(message: string) {
-    if (!conversationId) return;
-    resetStep();
-    sendMessage.mutate({ message });
-  }
+  }, [history?.messages.length, isSending]);
 
   if (!conversationId) {
     return (
@@ -90,26 +84,40 @@ export function ChatPanel({ agentId, conversationId }: ChatPanelProps) {
             {history.messages.map((message) => (
               <MessageBubble key={message.id} message={message} />
             ))}
-            {sendMessage.isPending && (
-              <div className="flex justify-start">
-                <div className="flex items-center gap-1.5 rounded-xl bg-muted/60 px-3.5 py-2.5 text-sm text-muted-foreground">
-                  {step?.type === "tool_call" && <Wrench className="size-3.5" />}
-                  {describeStep(step)}
+            {isSending &&
+              (step?.type === "done" ? (
+                // The 'done' step already carries the full final text (the
+                // backend doesn't stream tokens) — reveal it client-side so
+                // it doesn't just pop in once the ack also lands.
+                <div className="flex justify-start">
+                  <div className="max-w-[75%] rounded-xl bg-muted/60 px-3.5 py-2.5 text-foreground">
+                    <TypewriterText text={step.content} key={step.content} />
+                  </div>
                 </div>
-              </div>
-            )}
+              ) : (
+                <div className="flex justify-start">
+                  <div className="flex items-center gap-1.5 rounded-xl bg-muted/60 px-3.5 py-2.5 text-sm text-muted-foreground">
+                    {step?.type === "tool_call" && <Wrench className="size-3.5" />}
+                    {describeStep(step)}
+                  </div>
+                </div>
+              ))}
             <div ref={bottomRef} />
           </div>
         )}
       </div>
 
-      {sendMessage.isError && (
+      {sendError && (
         <p role="alert" className="px-4 pb-2 text-sm text-destructive">
-          {getErrorMessage(sendMessage.error)}
+          {getErrorMessage(sendError)}
         </p>
       )}
 
-      <MessageComposer onSend={handleSend} disabled={sendMessage.isPending} />
+      <MessageComposer
+        onSend={sendMessage}
+        disabled={isSending || !connected}
+        placeholder={connected ? undefined : "Connecting…"}
+      />
     </div>
   );
 }

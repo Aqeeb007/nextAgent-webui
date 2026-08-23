@@ -51,23 +51,20 @@ export interface ChatHistory {
   messages: ChatMessage[];
 }
 
-export interface SendMessagePayload {
-  message: string;
-}
-
-// POST .../messages — only the final assistant text, not the full row set
-// (tool-call/tool-result turns are persisted server-side but not echoed
-// here), so callers refetch the message list rather than append this in place.
+// Returned by the 'messageSent' socket ack (ChatService.sendMessage's
+// result) — only the final assistant text, not the full row set (tool-call
+// turns are persisted server-side but not echoed here), so callers refetch
+// the message list rather than append this in place.
 export interface SendMessageResult {
   conversationId: string;
   message: string;
 }
 
-// Live progress emitted over Socket.IO while a POST .../messages call is in
+// Live progress emitted over Socket.IO while a 'sendMessage' call is in
 // flight (ChatGateway.emitStep, mirroring ChatService's ChatStepEvent) — the
 // event name on the wire equals `type`, the payload is the object itself.
 // Purely a UI progress indicator; the persisted messages still come from
-// refetching after the HTTP call resolves.
+// refetching after 'messageSent' resolves.
 export type ChatStepEvent =
   | { type: "thinking" }
   | { type: "tool_call"; toolName: string }

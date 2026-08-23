@@ -1,13 +1,7 @@
 import { apiClient } from "@/lib/api/client";
 import { endpoints } from "@/lib/api/endpoints";
 
-import type {
-  ChatHistory,
-  Conversation,
-  ConversationListItem,
-  SendMessagePayload,
-  SendMessageResult,
-} from "../types/conversation.types";
+import type { ChatHistory, Conversation, ConversationListItem } from "../types/conversation.types";
 
 export async function listConversations(agentId: string) {
   const { data } = await apiClient.get<ConversationListItem[]>(
@@ -35,14 +29,6 @@ export async function getMessages(agentId: string, conversationId: string) {
   return data;
 }
 
-export async function sendMessage(
-  agentId: string,
-  conversationId: string,
-  payload: SendMessagePayload
-) {
-  const { data } = await apiClient.post<SendMessageResult>(
-    endpoints.agents.conversations.messages(agentId, conversationId),
-    payload
-  );
-  return data;
-}
+// Sending a message goes over the 'sendMessage' socket event now (see
+// use-conversation-chat.ts) — the backend still exposes POST .../messages,
+// but nothing in this app calls it anymore.
