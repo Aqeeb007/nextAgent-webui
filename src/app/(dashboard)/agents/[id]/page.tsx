@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AgentFormDialog } from "@/features/agents/components/agent-form-dialog";
+import { AgentToolsPanel } from "@/features/agents/components/agent-tools-panel";
 import { useAgent } from "@/features/agents/hooks/use-agent";
 import { useCurrentOrganization } from "@/features/organizations/hooks/use-current-organization";
 
@@ -110,9 +111,7 @@ export default function AgentDetailPage() {
         </TabsContent>
 
         <TabsContent value="tools" className="pt-4">
-          <p className="text-sm text-muted-foreground">
-            Tool management for this agent is coming soon.
-          </p>
+          <AgentToolsPanel agentId={agent.id} />
         </TabsContent>
 
         <TabsContent value="conversations" className="pt-4">

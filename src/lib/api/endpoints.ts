@@ -18,5 +18,9 @@ export const endpoints = {
   agents: {
     list: "/agents",
     detail: (id: string) => `/agents/${id}`,
+    tools: {
+      list: (agentId: string) => `/agents/${agentId}/tools`,
+      detail: (agentId: string, toolId: string) => `/agents/${agentId}/tools/${toolId}`,
+    },
   },
 } as const;
