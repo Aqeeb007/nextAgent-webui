@@ -1,6 +1,6 @@
 "use client";
 
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -11,16 +11,19 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AgentFormDialog } from "@/features/agents/components/agent-form-dialog";
 import { AgentToolsPanel } from "@/features/agents/components/agent-tools-panel";
+import { DeleteAgentDialog } from "@/features/agents/components/delete-agent-dialog";
 import { useAgent } from "@/features/agents/hooks/use-agent";
 import { ConversationView } from "@/features/conversations/components/conversation-view";
 import { useCurrentOrganization } from "@/features/organizations/hooks/use-current-organization";
 
 export default function AgentDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const router = useRouter();
   const { data: agent, isPending, isError, refetch } = useAgent(id);
   const { data: organization } = useCurrentOrganization();
 
   const [editOpen, setEditOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   if (isPending) {
     return <Loading label="Loading agent…" />;
@@ -48,9 +51,14 @@ export default function AgentDetailPage() {
             </Badge>
           </div>
         </div>
-        <Button variant="outline" size="sm" onClick={() => setEditOpen(true)}>
-          Edit
-        </Button>
+        <div className="flex shrink-0 items-center gap-2">
+          <Button variant="outline" size="sm" onClick={() => setEditOpen(true)}>
+            Edit
+          </Button>
+          <Button variant="destructive" size="sm" onClick={() => setDeleteOpen(true)}>
+            Delete
+          </Button>
+        </div>
       </div>
 
       {agent.description && (
@@ -121,6 +129,12 @@ export default function AgentDetailPage() {
       </Tabs>
 
       <AgentFormDialog open={editOpen} onOpenChange={setEditOpen} agent={agent} />
+      <DeleteAgentDialog
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        agent={agent}
+        onDeleted={() => router.push("/agents")}
+      />
     </div>
   );
 }

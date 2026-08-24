@@ -7,7 +7,9 @@ import {
   getRefreshToken,
   setRefreshToken,
 } from "@/lib/storage/refresh-token";
+import { getQueryClient } from "@/lib/query/query-client";
 import { useAuthStore } from "@/stores/auth.store";
+import { useOrganizationStore } from "@/stores/organization.store";
 
 import type { AuthSession, RefreshTokenResponse } from "../types/auth.types";
 
@@ -24,6 +26,14 @@ export function applyRefresh(data: RefreshTokenResponse) {
 export function clearAuthSession() {
   useAuthStore.getState().clearSession();
   clearRefreshToken();
+  useOrganizationStore.getState().clearSelectedOrg();
+  // Every query is scoped by selectedOrgId (see e.g. use-agents.ts), but that
+  // only stops a *different org* from seeing stale data — it does nothing
+  // for a *different user* logging in and landing on the same org, who'd
+  // otherwise see the previous user's already-cached queries until each one
+  // happens to refetch. Wiping the cache here (both intentional logout and
+  // expireSession() below route through this) guarantees a clean slate.
+  getQueryClient().clear();
 }
 
 const SESSION_EXPIRED_EVENT = "nexagent:session-expired";

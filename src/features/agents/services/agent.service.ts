@@ -29,3 +29,7 @@ export async function updateAgent(id: string, payload: UpdateAgentPayload) {
   );
   return data;
 }
+
+export async function deleteAgent(id: string) {
+  await apiClient.delete(endpoints.agents.detail(id));
+}

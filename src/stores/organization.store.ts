@@ -4,6 +4,7 @@ import { persist } from "zustand/middleware";
 interface OrganizationState {
   selectedOrgId: string | null;
   setSelectedOrgId: (id: string) => void;
+  clearSelectedOrg: () => void;
 }
 
 export const useOrganizationStore = create<OrganizationState>()(
@@ -11,6 +12,7 @@ export const useOrganizationStore = create<OrganizationState>()(
     (set) => ({
       selectedOrgId: null,
       setSelectedOrgId: (id) => set({ selectedOrgId: id }),
+      clearSelectedOrg: () => set({ selectedOrgId: null }),
     }),
     { name: "nexagent_selected_org" }
   )
