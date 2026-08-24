@@ -50,7 +50,7 @@ export default function ToolsPage() {
         <div className="flex flex-col gap-1">
           <h1 className="text-2xl font-semibold tracking-tight">Tools</h1>
           <p className="text-sm text-muted-foreground">
-            HTTP tools your agents can call during a conversation.
+            Tools your agents can call during a conversation.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -81,7 +81,7 @@ export default function ToolsPage() {
         <EmptyState
           icon={ToolCase}
           title="No tools yet"
-          description="Add an HTTP tool to let your agents call external APIs."
+          description="Add a tool to let your agents call external APIs, query a database, or run custom code."
           actionLabel="Add tool"
           onAction={openCreate}
         />

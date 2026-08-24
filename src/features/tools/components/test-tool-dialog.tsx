@@ -25,6 +25,20 @@ interface TestToolDialogProps {
   tool: Tool | null;
 }
 
+function testDescription(tool: Tool | null): string {
+  if (!tool) return "";
+
+  if (tool.type === "http") {
+    return `Calls ${tool.config.method} ${tool.config.url} with these arguments.`;
+  }
+
+  if (tool.type === "database") {
+    return `Runs this tool's query against ${tool.config.engine} with these arguments as named parameters.`;
+  }
+
+  return "Runs this tool's script with these arguments available as `args`.";
+}
+
 export function TestToolDialog({ open, onOpenChange, tool }: TestToolDialogProps) {
   const [argsText, setArgsText] = useState("{}");
   const [argsError, setArgsError] = useState<string | null>(null);
@@ -59,9 +73,7 @@ export function TestToolDialog({ open, onOpenChange, tool }: TestToolDialogProps
       <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Test {tool?.name}</DialogTitle>
-          <DialogDescription>
-            Calls {tool?.config.method} {tool?.config.url} with these arguments.
-          </DialogDescription>
+          <DialogDescription>{testDescription(tool)}</DialogDescription>
         </DialogHeader>
 
         <div className="flex min-w-0 flex-col gap-4">

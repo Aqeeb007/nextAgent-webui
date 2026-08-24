@@ -1,6 +1,6 @@
 "use client";
 
-import { Globe, Loader2, Search } from "lucide-react";
+import { Loader2, Search } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
@@ -15,7 +15,8 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { useAttachAgentTool } from "@/features/agents/hooks/use-attach-agent-tool";
-import { MethodBadge } from "@/features/tools/components/method-badge";
+import { ToolTypeBadge } from "@/features/tools/components/tool-type-badge";
+import { ToolTypeIcon } from "@/features/tools/components/tool-type-icon";
 import { useTools } from "@/features/tools/hooks/use-tools";
 import type { Tool } from "@/features/tools/types/tool.types";
 import { getErrorMessage } from "@/lib/api/error";
@@ -106,15 +107,13 @@ export function AttachToolDialog({
                       key={tool.id}
                       className="flex items-center gap-3 rounded-lg px-2 py-2 hover:bg-muted/40"
                     >
-                      <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                        <Globe className="size-4" />
-                      </div>
+                      <ToolTypeIcon type={tool.type} />
                       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
                         <div className="flex items-center gap-1.5">
                           <span className="truncate text-sm font-medium text-foreground">
                             {tool.name}
                           </span>
-                          <MethodBadge method={tool.config.method} />
+                          <ToolTypeBadge tool={tool} />
                         </div>
                         <span className="truncate text-xs text-muted-foreground">
                           {tool.description}

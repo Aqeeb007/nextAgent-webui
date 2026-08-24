@@ -1,6 +1,6 @@
 "use client";
 
-import { Globe, Loader2, Plus, ToolCase, X } from "lucide-react";
+import { Loader2, Plus, ToolCase, X } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { EmptyState } from "@/components/common/EmptyState";
@@ -11,6 +11,8 @@ import { Button } from "@/components/ui/button";
 import { AttachToolDialog } from "@/features/agents/components/attach-tool-dialog";
 import { useAgentTools } from "@/features/agents/hooks/use-agent-tools";
 import { useDetachAgentTool } from "@/features/agents/hooks/use-detach-agent-tool";
+import { ToolTypeIcon } from "@/features/tools/components/tool-type-icon";
+import { getToolTypeLabel } from "@/features/tools/utils/tool-display";
 
 interface AgentToolsPanelProps {
   agentId: string;
@@ -59,17 +61,13 @@ export function AgentToolsPanel({ agentId }: AgentToolsPanelProps) {
 
             return (
               <div key={tool.id} className="flex items-center gap-3 bg-card px-4 py-3">
-                <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                  <Globe className="size-4" />
-                </div>
+                <ToolTypeIcon type={tool.type} />
                 <div className="flex min-w-0 flex-1 flex-col gap-0.5">
                   <div className="flex items-center gap-1.5">
                     <span className="truncate text-sm font-medium text-foreground">
                       {tool.name}
                     </span>
-                    <Badge variant="outline" className="font-mono uppercase">
-                      {tool.type}
-                    </Badge>
+                    <Badge variant="outline">{getToolTypeLabel(tool.type)}</Badge>
                   </div>
                   <span className="text-xs text-muted-foreground">
                     Attached{" "}

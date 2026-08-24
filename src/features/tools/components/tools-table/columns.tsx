@@ -3,8 +3,10 @@
 import type { ColumnDef } from "@tanstack/react-table";
 
 import { DataTableColumnHeader } from "@/components/ui/data-table";
-import { MethodBadge } from "@/features/tools/components/method-badge";
+import { ToolConfigSummary } from "@/features/tools/components/tool-config-summary";
 import { ToolRowActions } from "@/features/tools/components/tool-row-actions";
+import { ToolTypeIcon } from "@/features/tools/components/tool-type-icon";
+import { getToolTypeLabel } from "@/features/tools/utils/tool-display";
 import type { Tool } from "@/features/tools/types/tool.types";
 
 interface ToolColumnActions {
@@ -29,22 +31,30 @@ export function createToolColumns({
       ),
     },
     {
-      id: "method",
-      accessorFn: (tool) => tool.config.method,
-      header: "Method",
-      cell: ({ row }) => <MethodBadge method={row.original.config.method} />,
+      accessorKey: "type",
+      header: "Type",
+      cell: ({ row }) => (
+        <div className="flex items-center gap-1.5">
+          <ToolTypeIcon type={row.original.type} className="size-6 rounded-md" />
+          <span className="text-muted-foreground">
+            {getToolTypeLabel(row.original.type)}
+          </span>
+        </div>
+      ),
     },
     {
-      id: "url",
-      accessorFn: (tool) => tool.config.url,
-      header: "Endpoint",
+      id: "config",
+      accessorFn: (tool) =>
+        tool.type === "http"
+          ? tool.config.url
+          : tool.type === "database"
+            ? tool.config.query
+            : tool.config.code,
+      header: "Config",
       cell: ({ row }) => (
-        <span
-          className="block max-w-xs truncate font-mono text-xs text-muted-foreground"
-          title={row.original.config.url}
-        >
-          {row.original.config.url}
-        </span>
+        <div className="max-w-xs">
+          <ToolConfigSummary tool={row.original} />
+        </div>
       ),
     },
     {
