@@ -3,10 +3,11 @@
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 @AGENTS.md
+@DESIGN.md
 
 ## Project state
 
-This is an early-stage scaffold (fresh `create-next-app` + shadcn/ui setup). Almost none of the target architecture below exists yet — `src/app/page.tsx` is still the default Next.js starter page, and `src/app/(auth)/auth/page.tsx` is a stub. Treat the structure in "Target architecture" as the convention to follow when adding code, not as a description of what's already built.
+The MVP is built out, not a scaffold: auth, organizations, agents, tools, real-time chat over Socket.IO, and members are all implemented, plus a full premium visual pass (see `DESIGN.md`). Treat the structure in "Target architecture" below as the convention already in use, not an aspirational target. Ongoing work adds new features (e.g. `Workflows`, currently an intentionally inert nav placeholder — see [Sidebar.tsx](src/components/layout/Sidebar.tsx)) on top of this base — see "Engineering principles" for how new code should fit in.
 
 ## Commands
 
@@ -51,3 +52,16 @@ New code should follow this feature-based layout (create directories as needed �
 - `tests/unit/`, `tests/integration/`, `tests/e2e/` — once a test framework is added, tests live here rather than co-located, per the intended structure.
 
 Only add an `api/` route under `src/app/api/` if a Next.js API route is actually needed (e.g. a webhook receiver) — the primary backend is expected to live outside this app. (Don't confuse this with [src/proxy.ts](src/proxy.ts), Next's routing-interception file — unrelated despite the name overlap.)
+
+## Engineering principles
+
+The MVP is done; new work from here is features and iteration on top of it. SOLID/DRY don't map onto a hooks-and-components codebase literally — here's what they mean concretely in this repo. Follow these for new code the same way `DESIGN.md` governs new UI:
+
+- **Single responsibility per file.** A component renders, a hook fetches/mutates, a service calls the API, a type describes shape — the `src/features/<feature>/{components,hooks,services,types}` split exists for this. A component should never import `apiClient` directly; it goes through a hook in that feature's `hooks/`.
+- **DRY via extraction after repetition, not before.** Don't build a shared abstraction speculatively — extract once a pattern has repeated ~3 times (see "Don't add features, refactor, or introduce abstractions beyond what the task requires" below). `PageHeader`, `StatCard`, and `CardGridSkeleton` in `src/components/{layout,common}/` are the model: pulled out after the same header/card-grid JSX showed up on 6+ pages, not built ahead of need.
+- **Open for extension via variants/props, closed for modification via forking.** New visual states are a `cva` variant (`button.tsx`, `badge.tsx`) or a new prop on an existing shared component (`PageHeader`, `EmptyState`). If something needs a new look, extend it — don't copy the file and diverge.
+- **Depend on abstractions, not implementations.** Pages/components call hooks (`useAgents()`), hooks call `services/`, services call `apiClient`/`publicApiClient` (see the API section above). Never skip a layer "for one quick fetch" — that's how the layering rots.
+- **Consistent contracts across similar things.** Every list page follows the same `isPending` → `Loading`/`CardGridSkeleton`, `isError` → `ErrorState`, empty → `EmptyState`, else → grid/table shape (see `agents/page.tsx`, `tools/page.tsx`). A new list page should match that shape exactly, not invent a bespoke loading/empty pattern.
+- **YAGNI.** `Workflows` is deliberately an inert nav placeholder rather than a half-built feature (see "Project state" above) — that's the intended pattern for scoping a future feature: ship what's asked now, don't scaffold speculative extensibility for a v2 that isn't scoped yet.
+
+This is the same discipline as the general "no premature abstractions, no unrequested error handling/validation, no backwards-compat shims" rule of thumb — restated concretely for this codebase's shape so it's unambiguous here even without that broader context.

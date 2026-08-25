@@ -56,7 +56,7 @@ export function Logomark({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        "flex size-8 shrink-0 items-center justify-center rounded-lg bg-linear-to-br from-primary to-[color-mix(in_oklch,var(--primary),black_25%)] text-primary-foreground shadow-[0_2px_8px_-1px_var(--primary)]",
+        "flex size-8 shrink-0 items-center justify-center rounded-lg bg-linear-to-br from-primary to-[color-mix(in_oklch,var(--primary),black_25%)] text-primary-foreground shadow-(--shadow-glow-primary-sm)",
         className
       )}
     >
