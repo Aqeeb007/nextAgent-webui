@@ -6,8 +6,10 @@ import {
   ChevronsUpDown,
   LayoutDashboard,
   LogOut,
+  Menu,
   Plus,
   Settings2,
+  Sparkles,
   ToolCase,
   Workflow,
 } from "lucide-react";
@@ -25,6 +27,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useLogoutMutation } from "@/features/auth/hooks/use-logout";
 import { CreateOrganizationDialog } from "@/features/organizations/components/create-organization-dialog";
 import { useOrganizations } from "@/features/organizations/hooks/use-organizations";
@@ -49,7 +52,20 @@ const navItems: NavItem[] = [
   { label: "Settings", href: "/settings", icon: Settings2 },
 ];
 
-export function Sidebar() {
+export function Logomark({ className }: { className?: string }) {
+  return (
+    <div
+      className={cn(
+        "flex size-8 shrink-0 items-center justify-center rounded-lg bg-linear-to-br from-primary to-[color-mix(in_oklch,var(--primary),black_25%)] text-primary-foreground shadow-[0_2px_8px_-1px_var(--primary)]",
+        className
+      )}
+    >
+      <Sparkles className="size-4" />
+    </div>
+  );
+}
+
+function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
   const router = useRouter();
   const user = useAuthStore((state) => state.user);
@@ -66,9 +82,7 @@ export function Sidebar() {
     logout(undefined, { onSettled: () => router.push("/auth") });
   }
 
-  const fullName = user
-    ? `${user.firstName} ${user.lastName}`
-    : "Not signed in";
+  const fullName = user ? `${user.firstName} ${user.lastName}` : "Not signed in";
   const initial = user?.firstName?.[0]?.toUpperCase() ?? "?";
 
   const selectedOrg = organizations?.find((org) => org.id === selectedOrgId);
@@ -80,17 +94,18 @@ export function Sidebar() {
       : "No workspaces";
 
   return (
-    <aside className="flex h-svh w-64 shrink-0 flex-col gap-6 border-r border-border bg-background px-4 py-5">
-      <span className="px-2 text-lg font-semibold tracking-tight">
-        NexAgent
-      </span>
+    <div className="flex h-full flex-col gap-6">
+      <Link href="/dashboard" className="flex items-center gap-2.5 px-2">
+        <Logomark />
+        <span className="text-[15px] font-semibold tracking-tight">NexAgent</span>
+      </Link>
 
       <DropdownMenu>
         <DropdownMenuTrigger
           disabled={isLoadingOrgs || !organizations?.length}
-          className="flex w-full items-center gap-3 rounded-lg border border-border bg-card px-3 py-2.5 text-left transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-50"
+          className="flex w-full items-center gap-3 rounded-xl border border-border bg-card px-3 py-2.5 text-left shadow-xs transition-all hover:border-primary/30 hover:bg-muted disabled:pointer-events-none disabled:opacity-50"
         >
-          <div className="flex size-8 shrink-0 items-center justify-center rounded-md bg-primary text-xs font-semibold text-primary-foreground">
+          <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/15 text-xs font-semibold text-primary">
             {orgInitial}
           </div>
           <span className="min-w-0 flex-1 truncate text-sm font-medium">
@@ -98,7 +113,7 @@ export function Sidebar() {
           </span>
           <ChevronsUpDown className="size-4 shrink-0 text-muted-foreground" />
         </DropdownMenuTrigger>
-        <DropdownMenuContent>
+        <DropdownMenuContent className="w-(--anchor-width)">
           {organizations?.map((org) => (
             <DropdownMenuItem
               key={org.id}
@@ -129,7 +144,7 @@ export function Sidebar() {
 
       <CreateOrganizationDialog open={createOrgOpen} onOpenChange={setCreateOrgOpen} />
 
-      <nav className="flex flex-1 flex-col gap-1">
+      <nav className="flex flex-1 flex-col gap-0.5">
         {navItems.map((item) => {
           const isActive =
             pathname === item.href || pathname.startsWith(`${item.href}/`);
@@ -141,9 +156,11 @@ export function Sidebar() {
                 key={item.href}
                 title={`${item.label} isn't available yet`}
                 aria-disabled="true"
-                className="flex cursor-not-allowed items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground/50"
+                className="flex cursor-not-allowed items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-medium text-muted-foreground/50"
               >
-                <Icon className="size-4" />
+                <span className="flex size-7 shrink-0 items-center justify-center rounded-md">
+                  <Icon className="size-4" />
+                </span>
                 <span className="flex-1">{item.label}</span>
                 {item.badge && (
                   <Badge variant="secondary" className="h-5">
@@ -158,12 +175,28 @@ export function Sidebar() {
             <Link
               key={item.href}
               href={item.href}
+              onClick={onNavigate}
               className={cn(
-                "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
-                isActive && "bg-primary/15 text-foreground hover:bg-primary/15",
+                "group relative flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-medium text-muted-foreground transition-all hover:bg-muted hover:text-foreground",
+                isActive && "bg-primary/10 text-foreground"
               )}
             >
-              <Icon className="size-4" />
+              <span
+                className={cn(
+                  "absolute top-1/2 left-0 h-4 w-[3px] -translate-y-1/2 rounded-full bg-primary opacity-0 transition-opacity",
+                  isActive && "opacity-100"
+                )}
+              />
+              <span
+                className={cn(
+                  "flex size-7 shrink-0 items-center justify-center rounded-md transition-colors",
+                  isActive
+                    ? "bg-primary/15 text-primary"
+                    : "text-muted-foreground group-hover:text-foreground"
+                )}
+              >
+                <Icon className="size-4" />
+              </span>
               <span className="flex-1">{item.label}</span>
               {item.badge && (
                 <Badge variant="secondary" className="h-5">
@@ -177,7 +210,7 @@ export function Sidebar() {
 
       <div className="flex flex-col gap-3 border-t border-border pt-4">
         <div className="flex items-center gap-2.5 px-1">
-          <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/15 text-xs font-semibold text-primary">
+          <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/15 text-xs font-semibold text-primary ring-2 ring-primary/10">
             {initial}
           </div>
           <div className="flex min-w-0 flex-col">
@@ -195,12 +228,46 @@ export function Sidebar() {
           size="sm"
           onClick={handleLogout}
           disabled={isLoggingOut}
-          className="justify-start gap-2.5 px-3 text-muted-foreground hover:text-foreground"
+          className="justify-start gap-2.5 px-2.5 text-muted-foreground hover:text-foreground"
         >
           <LogOut className="size-4" />
           {isLoggingOut ? "Logging out…" : "Log out"}
         </Button>
       </div>
+    </div>
+  );
+}
+
+export function Sidebar() {
+  return (
+    <aside className="sticky top-0 hidden h-svh w-64 shrink-0 flex-col gap-6 border-r border-border bg-sidebar px-4 py-5 lg:flex">
+      <SidebarNav />
     </aside>
+  );
+}
+
+export function MobileNav() {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className="flex items-center justify-between border-b border-border bg-background/80 px-4 py-3 backdrop-blur-sm lg:hidden">
+      <Link href="/dashboard" className="flex items-center gap-2.5">
+        <Logomark />
+        <span className="text-[15px] font-semibold tracking-tight">NexAgent</span>
+      </Link>
+
+      <Sheet open={open} onOpenChange={setOpen}>
+        <SheetTrigger
+          render={
+            <Button variant="ghost" size="icon" aria-label="Open navigation" />
+          }
+        >
+          <Menu className="size-5" />
+        </SheetTrigger>
+        <SheetContent>
+          <SidebarNav onNavigate={() => setOpen(false)} />
+        </SheetContent>
+      </Sheet>
+    </div>
   );
 }

@@ -3,9 +3,10 @@
 import { LayoutGrid, Plus, Table2, ToolCase } from "lucide-react";
 import { useState } from "react";
 
+import { CardGridSkeleton } from "@/components/common/CardGridSkeleton";
 import { EmptyState } from "@/components/common/EmptyState";
 import { ErrorState } from "@/components/common/ErrorState";
-import { Loading } from "@/components/common/Loading";
+import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -46,35 +47,33 @@ export default function ToolsPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex flex-col gap-1">
-          <h1 className="text-2xl font-semibold tracking-tight">Tools</h1>
-          <p className="text-sm text-muted-foreground">
-            Tools your agents can call during a conversation.
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          {tools && tools.length > 0 && (
-            <Tabs value={view} onValueChange={(value) => setView(value as ToolsView)}>
-              <TabsList>
-                <TabsTrigger value="grid" aria-label="Grid view">
-                  <LayoutGrid />
-                </TabsTrigger>
-                <TabsTrigger value="table" aria-label="Table view">
-                  <Table2 />
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
-          )}
-          <Button size="sm" className="gap-1.5" onClick={openCreate}>
-            <Plus className="size-4" />
-            Add tool
-          </Button>
-        </div>
-      </div>
+      <PageHeader
+        title="Tools"
+        description="Tools your agents can call during a conversation."
+        actions={
+          <>
+            {tools && tools.length > 0 && (
+              <Tabs value={view} onValueChange={(value) => setView(value as ToolsView)}>
+                <TabsList>
+                  <TabsTrigger value="grid" aria-label="Grid view">
+                    <LayoutGrid />
+                  </TabsTrigger>
+                  <TabsTrigger value="table" aria-label="Table view">
+                    <Table2 />
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+            )}
+            <Button size="sm" className="gap-1.5" onClick={openCreate}>
+              <Plus className="size-4" />
+              Add tool
+            </Button>
+          </>
+        }
+      />
 
       {isPending ? (
-        <Loading label="Loading tools…" />
+        <CardGridSkeleton />
       ) : isError ? (
         <ErrorState title="Couldn't load tools" onRetry={() => refetch()} />
       ) : tools.length === 0 ? (

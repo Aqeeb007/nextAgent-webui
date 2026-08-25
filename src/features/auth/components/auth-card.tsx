@@ -16,11 +16,7 @@ export function AuthCard() {
   const [tab, setTab] = useState<AuthTab>("login");
 
   return (
-    <div className="flex w-full max-w-sm flex-col gap-8">
-      <span className="text-sm font-semibold tracking-[0.2em] text-muted-foreground uppercase">
-        NexAgent
-      </span>
-
+    <div className="fade-up-item w-full max-w-sm rounded-2xl border border-border bg-card p-6 shadow-lg sm:p-8">
       <Tabs value={tab} onValueChange={(value) => setTab(value as AuthTab)}>
         <TabsList className="h-10 w-full rounded-full bg-muted p-1">
           <TabsTrigger value="login" className={`flex-1 rounded-full ${activeTabClasses}`}>

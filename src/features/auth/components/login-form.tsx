@@ -7,6 +7,7 @@ import type { FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PasswordInput } from "@/components/ui/password-input";
 import { useLoginMutation } from "@/features/auth/hooks/use-login";
 import { getErrorMessage } from "@/lib/api/error";
 
@@ -55,10 +56,9 @@ export function LoginForm({ onCreateAccount }: LoginFormProps) {
 
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="login-password">Password</Label>
-          <Input
+          <PasswordInput
             id="login-password"
             name="password"
-            type="password"
             placeholder="Enter your password"
             autoComplete="current-password"
             required

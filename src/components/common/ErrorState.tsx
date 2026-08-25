@@ -22,12 +22,14 @@ export function ErrorState({
     <div
       role="alert"
       className={cn(
-        "flex flex-1 flex-col items-center justify-center gap-3 rounded-xl border border-destructive/20 bg-destructive/5 px-6 py-12 text-center",
+        "fade-up-item flex flex-1 flex-col items-center justify-center gap-3 rounded-xl border border-destructive/20 bg-destructive/5 px-6 py-14 text-center",
         className
       )}
     >
-      <TriangleAlert className="size-6 text-destructive" />
-      <div className="flex flex-col gap-1">
+      <div className="flex size-12 items-center justify-center rounded-full bg-destructive/10 text-destructive ring-1 ring-destructive/10">
+        <TriangleAlert className="size-5" />
+      </div>
+      <div className="flex flex-col gap-1.5">
         <p className="text-sm font-medium text-foreground">{title}</p>
         <p className="text-sm text-muted-foreground">{description}</p>
       </div>

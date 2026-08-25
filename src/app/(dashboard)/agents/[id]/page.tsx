@@ -6,6 +6,7 @@ import { useState } from "react";
 
 import { ErrorState } from "@/components/common/ErrorState";
 import { Loading } from "@/components/common/Loading";
+import { PageHeader } from "@/components/layout/PageHeader";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -35,38 +36,31 @@ export default function AgentDetailPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-1.5 text-sm">
-            <Link href="/agents" className="text-primary hover:underline">
-              Agents
-            </Link>
-            <span className="text-muted-foreground">/</span>
-            <span className="text-muted-foreground">{agent.name}</span>
-          </div>
-          <div className="flex items-center gap-2.5">
-            <h1 className="text-2xl font-semibold tracking-tight">{agent.name}</h1>
+      <PageHeader
+        breadcrumbs={[{ label: "Agents", href: "/agents" }, { label: agent.name }]}
+        title={
+          <span className="flex flex-wrap items-center gap-2.5">
+            {agent.name}
             <Badge variant="outline" className="font-mono">
               {agent.model}
             </Badge>
-          </div>
-        </div>
-        <div className="flex shrink-0 items-center gap-2">
-          <Link href={`/agents/${agent.id}/chat`} className={buttonVariants({ size: "sm" })}>
-            Open chat
-          </Link>
-          <Button variant="outline" size="sm" onClick={() => setEditOpen(true)}>
-            Edit
-          </Button>
-          <Button variant="destructive" size="sm" onClick={() => setDeleteOpen(true)}>
-            Delete
-          </Button>
-        </div>
-      </div>
-
-      {agent.description && (
-        <p className="text-sm text-muted-foreground">{agent.description}</p>
-      )}
+          </span>
+        }
+        description={agent.description}
+        actions={
+          <>
+            <Link href={`/agents/${agent.id}/chat`} className={buttonVariants({ size: "sm" })}>
+              Open chat
+            </Link>
+            <Button variant="outline" size="sm" onClick={() => setEditOpen(true)}>
+              Edit
+            </Button>
+            <Button variant="destructive" size="sm" onClick={() => setDeleteOpen(true)}>
+              Delete
+            </Button>
+          </>
+        }
+      />
 
       <Tabs defaultValue="overview">
         <TabsList variant="line">
@@ -76,11 +70,18 @@ export default function AgentDetailPage() {
         </TabsList>
 
         <TabsContent value="overview" className="flex flex-col gap-6 pt-4">
-          <div className="flex flex-col gap-2 rounded-xl bg-card p-4 ring-1 ring-foreground/10">
-            <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-              System prompt
-            </p>
-            <div className="rounded-lg bg-muted/40 p-3">
+          <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+            <div className="flex items-center gap-2 border-b border-border bg-muted/30 px-4 py-2.5">
+              <span className="flex gap-1.5">
+                <span className="size-2 rounded-full bg-destructive/50" />
+                <span className="size-2 rounded-full bg-warning/50" />
+                <span className="size-2 rounded-full bg-success/50" />
+              </span>
+              <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                System prompt
+              </p>
+            </div>
+            <div className="p-4">
               <p className="font-mono text-sm whitespace-pre-wrap text-muted-foreground">
                 {agent.systemPrompt}
               </p>
@@ -88,11 +89,18 @@ export default function AgentDetailPage() {
           </div>
 
           {agent.configuration && (
-            <div className="flex flex-col gap-2 rounded-xl bg-card p-4 ring-1 ring-foreground/10">
-              <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                Configuration
-              </p>
-              <div className="rounded-lg bg-muted/40 p-3">
+            <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+              <div className="flex items-center gap-2 border-b border-border bg-muted/30 px-4 py-2.5">
+                <span className="flex gap-1.5">
+                  <span className="size-2 rounded-full bg-destructive/50" />
+                  <span className="size-2 rounded-full bg-warning/50" />
+                  <span className="size-2 rounded-full bg-success/50" />
+                </span>
+                <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                  Configuration
+                </p>
+              </div>
+              <div className="p-4">
                 <pre className="font-mono text-sm whitespace-pre-wrap text-muted-foreground">
                   {JSON.stringify(agent.configuration, null, 2)}
                 </pre>
@@ -100,8 +108,8 @@ export default function AgentDetailPage() {
             </div>
           )}
 
-          <div className="flex flex-wrap gap-8">
-            <div className="flex flex-col gap-1">
+          <div className="flex flex-wrap gap-4">
+            <div className="flex flex-col gap-1 rounded-lg border border-border bg-card px-4 py-3 shadow-xs">
               <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
                 Created
               </p>
@@ -113,7 +121,7 @@ export default function AgentDetailPage() {
                 })}
               </p>
             </div>
-            <div className="flex flex-col gap-1">
+            <div className="flex flex-col gap-1 rounded-lg border border-border bg-card px-4 py-3 shadow-xs">
               <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
                 Organization
               </p>

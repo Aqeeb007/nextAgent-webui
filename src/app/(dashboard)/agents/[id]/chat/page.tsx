@@ -1,10 +1,10 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import Link from "next/link";
 
 import { ErrorState } from "@/components/common/ErrorState";
 import { Loading } from "@/components/common/Loading";
+import { PageHeader } from "@/components/layout/PageHeader";
 import { ConversationView } from "@/features/conversations/components/conversation-view";
 import { useAgent } from "@/features/agents/hooks/use-agent";
 
@@ -22,20 +22,14 @@ export default function AgentChatPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-1">
-        <div className="flex items-center gap-1.5 text-sm">
-          <Link href="/agents" className="text-primary hover:underline">
-            Agents
-          </Link>
-          <span className="text-muted-foreground">/</span>
-          <Link href={`/agents/${agent.id}`} className="text-primary hover:underline">
-            {agent.name}
-          </Link>
-          <span className="text-muted-foreground">/</span>
-          <span className="text-muted-foreground">Chat</span>
-        </div>
-        <h1 className="text-2xl font-semibold tracking-tight">{agent.name}</h1>
-      </div>
+      <PageHeader
+        title={agent.name}
+        breadcrumbs={[
+          { label: "Agents", href: "/agents" },
+          { label: agent.name, href: `/agents/${agent.id}` },
+          { label: "Chat" },
+        ]}
+      />
 
       <ConversationView agentId={agent.id} />
     </div>

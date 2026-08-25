@@ -7,6 +7,7 @@ import type { FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PasswordInput } from "@/components/ui/password-input";
 import { useRegisterMutation } from "@/features/auth/hooks/use-register";
 import { getErrorMessage } from "@/lib/api/error";
 
@@ -83,10 +84,9 @@ export function SignupForm({ onLogin }: SignupFormProps) {
 
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="signup-password">Password</Label>
-          <Input
+          <PasswordInput
             id="signup-password"
             name="password"
-            type="password"
             placeholder="Create a password"
             autoComplete="new-password"
             minLength={8}

@@ -7,7 +7,7 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
+  --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --font-heading: var(--font-sans);
   --color-sidebar-ring: var(--sidebar-ring);
@@ -49,6 +49,13 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+  --shadow-xs: var(--shadow-elevation-xs);
+  --shadow-sm: var(--shadow-elevation-sm);
+  --shadow-md: var(--shadow-elevation-md);
+  --shadow-lg: var(--shadow-elevation-lg);
+  --shadow-xl: var(--shadow-elevation-xl);
+  --animate-fade-up: fade-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-pulse-dot: pulse-dot 1.6s ease-in-out infinite;
 }
 
 :root {
@@ -89,6 +96,11 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+  --shadow-elevation-xs: 0 1px 2px rgb(0 0 0 / 0.04);
+  --shadow-elevation-sm: 0 1px 2px rgb(0 0 0 / 0.06), 0 1px 1px rgb(0 0 0 / 0.04);
+  --shadow-elevation-md: 0 4px 12px rgb(0 0 0 / 0.08), 0 1px 2px rgb(0 0 0 / 0.04);
+  --shadow-elevation-lg: 0 12px 24px rgb(0 0 0 / 0.1), 0 2px 6px rgb(0 0 0 / 0.05);
+  --shadow-elevation-xl: 0 24px 48px rgb(0 0 0 / 0.14), 0 4px 12px rgb(0 0 0 / 0.06);
 }
 
 .dark {
@@ -128,6 +140,11 @@
   --sidebar-accent-foreground: #edeef0;
   --sidebar-border: rgb(255 255 255 / 10%);
   --sidebar-ring: #6e5bff;
+  --shadow-elevation-xs: 0 1px 2px rgb(0 0 0 / 0.3);
+  --shadow-elevation-sm: 0 1px 3px rgb(0 0 0 / 0.35), 0 1px 2px rgb(0 0 0 / 0.3);
+  --shadow-elevation-md: 0 6px 16px rgb(0 0 0 / 0.4), 0 2px 4px rgb(0 0 0 / 0.3);
+  --shadow-elevation-lg: 0 16px 32px rgb(0 0 0 / 0.45), 0 4px 8px rgb(0 0 0 / 0.3);
+  --shadow-elevation-xl: 0 32px 64px rgb(0 0 0 / 0.5), 0 8px 16px rgb(0 0 0 / 0.35);
 }
 
 @layer base {
@@ -166,4 +183,35 @@
   ::-webkit-scrollbar-corner {
     background: transparent;
   }
+
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes pulse-dot {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.35;
+    }
+  }
+}
+
+@utility fade-up-item {
+  animation: var(--animate-fade-up);
+  animation-fill-mode: both;
+}
+
+@utility bg-grid-fade {
+  background-image:
+    radial-gradient(ellipse 60% 50% at 50% 0%, color-mix(in oklch, var(--primary) 16%, transparent), transparent);
 }

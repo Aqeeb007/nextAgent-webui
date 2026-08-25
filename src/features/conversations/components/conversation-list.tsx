@@ -82,10 +82,16 @@ export function ConversationList({
                 <div
                   key={conversation.id}
                   className={cn(
-                    "group flex items-center gap-1 rounded-lg pr-1.5 transition-colors hover:bg-muted",
-                    isActive && "bg-primary/15 hover:bg-primary/15"
+                    "group relative flex items-center gap-1 rounded-lg pr-1.5 transition-colors hover:bg-muted",
+                    isActive && "bg-primary/10 hover:bg-primary/10"
                   )}
                 >
+                  <span
+                    className={cn(
+                      "absolute top-1/2 left-0 h-4 w-[3px] -translate-y-1/2 rounded-full bg-primary opacity-0 transition-opacity",
+                      isActive && "opacity-100"
+                    )}
+                  />
                   <button
                     type="button"
                     onClick={() => onSelect(conversation.id)}

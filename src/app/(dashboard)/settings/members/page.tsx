@@ -5,6 +5,7 @@ import { Users } from "lucide-react";
 import { EmptyState } from "@/components/common/EmptyState";
 import { ErrorState } from "@/components/common/ErrorState";
 import { Loading } from "@/components/common/Loading";
+import { PageHeader } from "@/components/layout/PageHeader";
 import { Badge, type badgeVariants } from "@/components/ui/badge";
 import {
   Table,
@@ -34,22 +35,21 @@ export default function MembersPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex flex-col gap-1">
-          <h1 className="text-2xl font-semibold tracking-tight">Members</h1>
-          <p className="text-sm text-muted-foreground">
-            Manage who has access to this organization.
-          </p>
-        </div>
-        {currentMembership &&
+      <PageHeader
+        title="Members"
+        description="Manage who has access to this organization."
+        breadcrumbs={[{ label: "Settings", href: "/settings" }, { label: "Members" }]}
+        actions={
+          currentMembership &&
           (canInvite ? (
             <AddMemberDialog />
           ) : (
             <p className="text-xs text-muted-foreground">
               Only owners and admins can add members.
             </p>
-          ))}
-      </div>
+          ))
+        }
+      />
 
       {isPending ? (
         <Loading label="Loading members…" />
@@ -62,7 +62,7 @@ export default function MembersPage() {
           description="Add a teammate to this organization to get started."
         />
       ) : (
-        <div className="overflow-hidden rounded-xl border border-border">
+        <div className="overflow-hidden rounded-xl border border-border shadow-sm">
           <Table>
             <TableHeader>
               <TableRow>
@@ -75,12 +75,20 @@ export default function MembersPage() {
               {members.map((member) => (
                 <TableRow key={member.id}>
                   <TableCell className="font-medium text-foreground">
-                    {member.firstName} {member.lastName}
-                    {member.userId === currentMembership?.userId && (
-                      <span className="ml-1.5 text-xs font-normal text-muted-foreground">
-                        (you)
+                    <div className="flex items-center gap-2.5">
+                      <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/15 text-xs font-semibold text-primary">
+                        {member.firstName?.[0]?.toUpperCase()}
+                        {member.lastName?.[0]?.toUpperCase()}
+                      </div>
+                      <span>
+                        {member.firstName} {member.lastName}
+                        {member.userId === currentMembership?.userId && (
+                          <span className="ml-1.5 text-xs font-normal text-muted-foreground">
+                            (you)
+                          </span>
+                        )}
                       </span>
-                    )}
+                    </div>
                   </TableCell>
                   <TableCell className="text-muted-foreground">{member.email}</TableCell>
                   <TableCell>

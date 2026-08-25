@@ -29,26 +29,26 @@ export function EmptyState({
   return (
     <div
       className={cn(
-        "flex flex-1 flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-border px-6 py-12 text-center",
+        "fade-up-item flex flex-1 flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-border bg-muted/10 px-6 py-14 text-center",
         className
       )}
     >
-      <div className="flex size-10 items-center justify-center rounded-full bg-muted text-muted-foreground">
+      <div className="relative flex size-12 items-center justify-center rounded-full bg-linear-to-br from-primary/15 to-primary/5 text-primary ring-1 ring-primary/10">
         <Icon className="size-5" />
       </div>
-      <div className="flex flex-col gap-1">
+      <div className="flex flex-col gap-1.5">
         <p className="text-sm font-medium text-foreground">{title}</p>
         {description && (
           <p className="max-w-sm text-sm text-muted-foreground">{description}</p>
         )}
       </div>
       {actionLabel && actionHref && (
-        <Link href={actionHref} className={cn(buttonVariants({ size: "sm" }), "mt-2")}>
+        <Link href={actionHref} className={cn(buttonVariants({ size: "sm" }), "mt-2 gap-1.5")}>
           {actionLabel}
         </Link>
       )}
       {actionLabel && onAction && !actionHref && (
-        <Button size="sm" onClick={onAction} className="mt-2">
+        <Button size="sm" onClick={onAction} className="mt-2 gap-1.5">
           {actionLabel}
         </Button>
       )}

@@ -1,6 +1,6 @@
 "use client";
 
-import { MessagesSquare, Wrench } from "lucide-react";
+import { Bot, MessagesSquare, Wrench } from "lucide-react";
 import { useEffect, useRef } from "react";
 
 import { EmptyState } from "@/components/common/EmptyState";
@@ -69,9 +69,17 @@ export function ChatPanel({ agentId, conversationId }: ChatPanelProps) {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex items-center justify-between border-b border-border px-4 py-2.5">
+      <div className="flex items-center justify-between border-b border-border bg-muted/20 px-4 py-2.5">
         <p className="text-sm font-medium text-foreground">Conversation</p>
-        {connected && <Badge variant="live">Live</Badge>}
+        {connected && (
+          <Badge variant="live" className="gap-1.5">
+            <span className="relative flex size-1.5">
+              <span className="absolute inline-flex size-full animate-ping rounded-full bg-live opacity-75" />
+              <span className="relative inline-flex size-1.5 rounded-full bg-live" />
+            </span>
+            Live
+          </Badge>
+        )}
       </div>
 
       <div className="flex-1 overflow-y-auto p-4">
@@ -80,7 +88,7 @@ export function ChatPanel({ agentId, conversationId }: ChatPanelProps) {
             Send a message to start the conversation.
           </p>
         ) : (
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-4">
             {history.messages.map((message) => (
               <MessageBubble key={message.id} message={message} />
             ))}
@@ -89,15 +97,28 @@ export function ChatPanel({ agentId, conversationId }: ChatPanelProps) {
                 // The 'done' step already carries the full final text (the
                 // backend doesn't stream tokens) — reveal it client-side so
                 // it doesn't just pop in once the ack also lands.
-                <div className="flex justify-start">
-                  <div className="max-w-[75%] rounded-xl bg-muted/60 px-3.5 py-2.5 text-foreground">
+                <div className="flex items-end gap-2.5">
+                  <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-primary/25 to-primary/10 text-primary">
+                    <Bot className="size-3.5" />
+                  </div>
+                  <div className="max-w-[min(75%,32rem)] rounded-2xl rounded-bl-md bg-muted/60 px-3.5 py-2.5 text-foreground shadow-sm">
                     <TypewriterText text={step.content} key={step.content} />
                   </div>
                 </div>
               ) : (
-                <div className="flex justify-start">
-                  <div className="flex items-center gap-1.5 rounded-xl bg-muted/60 px-3.5 py-2.5 text-sm text-muted-foreground">
-                    {step?.type === "tool_call" && <Wrench className="size-3.5" />}
+                <div className="flex items-center gap-2.5">
+                  <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-primary/25 to-primary/10 text-primary">
+                    {step?.type === "tool_call" ? (
+                      <Wrench className="size-3.5" />
+                    ) : (
+                      <span className="flex gap-0.5">
+                        <span className="size-1 animate-bounce rounded-full bg-primary [animation-delay:-0.3s]" />
+                        <span className="size-1 animate-bounce rounded-full bg-primary [animation-delay:-0.15s]" />
+                        <span className="size-1 animate-bounce rounded-full bg-primary" />
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-1.5 rounded-2xl rounded-bl-md bg-muted/60 px-3.5 py-2.5 text-sm text-muted-foreground shadow-sm">
                     {describeStep(step)}
                   </div>
                 </div>

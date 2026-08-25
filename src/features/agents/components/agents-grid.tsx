@@ -8,8 +8,12 @@ interface AgentsGridProps {
 export function AgentsGrid({ agents }: AgentsGridProps) {
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-      {agents.map((agent) => (
-        <AgentCard key={agent.id} agent={agent} />
+      {agents.map((agent, index) => (
+        <AgentCard
+          key={agent.id}
+          agent={agent}
+          style={{ animationDelay: `${Math.min(index, 8) * 50}ms` }}
+        />
       ))}
     </div>
   );

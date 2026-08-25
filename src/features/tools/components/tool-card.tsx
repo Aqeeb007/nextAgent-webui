@@ -1,3 +1,5 @@
+import type { CSSProperties } from "react";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ToolConfigSummary } from "@/features/tools/components/tool-config-summary";
 import { ToolRowActions } from "@/features/tools/components/tool-row-actions";
@@ -9,11 +11,15 @@ interface ToolCardProps {
   onEdit: (tool: Tool) => void;
   onTest: (tool: Tool) => void;
   onDelete: (tool: Tool) => void;
+  style?: CSSProperties;
 }
 
-export function ToolCard({ tool, onEdit, onTest, onDelete }: ToolCardProps) {
+export function ToolCard({ tool, onEdit, onTest, onDelete, style }: ToolCardProps) {
   return (
-    <Card>
+    <Card
+      style={style}
+      className="fade-up-item transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:ring-primary/25"
+    >
       <CardHeader className="grid-cols-[auto_1fr_auto] items-center gap-2.5">
         <ToolTypeIcon type={tool.type} />
         <CardTitle className="truncate" title={tool.name}>
