@@ -3,6 +3,10 @@ export interface Organization {
   name: string;
 }
 
+export interface CreateOrganizationPayload {
+  name: string;
+}
+
 // All roles a membership can hold. "owner" only ever arrives via GET
 // (org-members list) — AddMemberDto excludes it from the invite payload to
 // close off a privilege-escalation path, so it's never something the client

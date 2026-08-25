@@ -6,6 +6,7 @@ import {
   ChevronsUpDown,
   LayoutDashboard,
   LogOut,
+  Plus,
   Settings2,
   ToolCase,
   Workflow,
@@ -13,6 +14,7 @@ import {
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import type { ComponentType } from "react";
+import { useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -20,9 +22,11 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useLogoutMutation } from "@/features/auth/hooks/use-logout";
+import { CreateOrganizationDialog } from "@/features/organizations/components/create-organization-dialog";
 import { useOrganizations } from "@/features/organizations/hooks/use-organizations";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores/auth.store";
@@ -32,13 +36,16 @@ interface NavItem {
   href: string;
   icon: ComponentType<{ className?: string }>;
   badge?: string;
+  // Nothing lives at this route yet (V2 scope) — render it inert instead of
+  // a dead link that 404s.
+  disabled?: boolean;
 }
 
 const navItems: NavItem[] = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { label: "Agents", href: "/agents", icon: Bot },
   { label: "Tools", href: "/tools", icon: ToolCase },
-  { label: "Workflows", href: "/workflows", icon: Workflow, badge: "V2" },
+  { label: "Workflows", href: "/workflows", icon: Workflow, badge: "V2", disabled: true },
   { label: "Settings", href: "/settings", icon: Settings2 },
 ];
 
@@ -53,6 +60,7 @@ export function Sidebar() {
     selectedOrgId,
     setSelectedOrgId,
   } = useOrganizations();
+  const [createOrgOpen, setCreateOrgOpen] = useState(false);
 
   function handleLogout() {
     logout(undefined, { onSettled: () => router.push("/auth") });
@@ -106,14 +114,45 @@ export function Sidebar() {
               )}
             </DropdownMenuItem>
           ))}
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            onClick={() => setCreateOrgOpen(true)}
+            className="gap-2.5 py-1.5"
+          >
+            <div className="flex size-6 shrink-0 items-center justify-center rounded-md text-muted-foreground">
+              <Plus className="size-4" />
+            </div>
+            <span className="flex-1 truncate">Create organization</span>
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+
+      <CreateOrganizationDialog open={createOrgOpen} onOpenChange={setCreateOrgOpen} />
 
       <nav className="flex flex-1 flex-col gap-1">
         {navItems.map((item) => {
           const isActive =
             pathname === item.href || pathname.startsWith(`${item.href}/`);
           const Icon = item.icon;
+
+          if (item.disabled) {
+            return (
+              <div
+                key={item.href}
+                title={`${item.label} isn't available yet`}
+                aria-disabled="true"
+                className="flex cursor-not-allowed items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground/50"
+              >
+                <Icon className="size-4" />
+                <span className="flex-1">{item.label}</span>
+                {item.badge && (
+                  <Badge variant="secondary" className="h-5">
+                    {item.badge}
+                  </Badge>
+                )}
+              </div>
+            );
+          }
 
           return (
             <Link

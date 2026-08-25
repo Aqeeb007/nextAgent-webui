@@ -4,6 +4,7 @@ import { endpoints } from "@/lib/api/endpoints";
 import type {
   AddOrganizationMemberPayload,
   AddOrganizationMemberResult,
+  CreateOrganizationPayload,
   Organization,
   OrganizationMember,
 } from "../types/organization.types";
@@ -11,6 +12,14 @@ import type {
 export async function listOrganizations() {
   const { data } = await apiClient.get<Organization[]>(
     endpoints.organizations.list
+  );
+  return data;
+}
+
+export async function createOrganization(payload: CreateOrganizationPayload) {
+  const { data } = await apiClient.post<Organization>(
+    endpoints.organizations.list,
+    payload
   );
   return data;
 }

@@ -7,7 +7,7 @@ import { useState } from "react";
 import { ErrorState } from "@/components/common/ErrorState";
 import { Loading } from "@/components/common/Loading";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AgentFormDialog } from "@/features/agents/components/agent-form-dialog";
 import { AgentToolsPanel } from "@/features/agents/components/agent-tools-panel";
@@ -52,6 +52,9 @@ export default function AgentDetailPage() {
           </div>
         </div>
         <div className="flex shrink-0 items-center gap-2">
+          <Link href={`/agents/${agent.id}/chat`} className={buttonVariants({ size: "sm" })}>
+            Open chat
+          </Link>
           <Button variant="outline" size="sm" onClick={() => setEditOpen(true)}>
             Edit
           </Button>
