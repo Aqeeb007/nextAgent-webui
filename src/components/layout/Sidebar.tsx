@@ -2,6 +2,7 @@
 
 import {
   Bot,
+  BookOpen,
   Check,
   ChevronsUpDown,
   LayoutDashboard,
@@ -48,6 +49,7 @@ const navItems: NavItem[] = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { label: "Agents", href: "/agents", icon: Bot },
   { label: "Tools", href: "/tools", icon: ToolCase },
+  { label: "Knowledge Base", href: "/documents", icon: BookOpen },
   { label: "Workflows", href: "/workflows", icon: Workflow, badge: "V2", disabled: true },
   { label: "Settings", href: "/settings", icon: Settings2 },
 ];

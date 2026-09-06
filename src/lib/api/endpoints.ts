@@ -15,12 +15,21 @@ export const endpoints = {
     detail: (id: string) => `/tools/${id}`,
     test: (id: string) => `/tools/${id}/test`,
   },
+  documents: {
+    list: "/documents",
+    detail: (id: string) => `/documents/${id}`,
+  },
   agents: {
     list: "/agents",
     detail: (id: string) => `/agents/${id}`,
     tools: {
       list: (agentId: string) => `/agents/${agentId}/tools`,
       detail: (agentId: string, toolId: string) => `/agents/${agentId}/tools/${toolId}`,
+    },
+    documents: {
+      list: (agentId: string) => `/agents/${agentId}/documents`,
+      detail: (agentId: string, documentId: string) =>
+        `/agents/${agentId}/documents/${documentId}`,
     },
     // Multiple conversations per (agent, user) — list/create live on the
     // collection, messages are nested under a specific conversation.

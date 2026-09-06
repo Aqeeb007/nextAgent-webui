@@ -11,3 +11,10 @@ export function canInviteMembers(role: RoleSlug | undefined): boolean {
 export function canManageTools(role: RoleSlug | undefined): boolean {
   return role === "owner" || role === "admin";
 }
+
+// Unlike canManageTools: every role can create/read documents (document
+// config carries no secrets, unlike tool config), only delete is owner-only —
+// mirrors agent:delete's gradient, not tool:*'s.
+export function canDeleteDocuments(role: RoleSlug | undefined): boolean {
+  return role === "owner";
+}

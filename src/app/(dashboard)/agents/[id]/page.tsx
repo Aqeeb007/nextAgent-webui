@@ -10,6 +10,7 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AgentDocumentsPanel } from "@/features/agents/components/agent-documents-panel";
 import { AgentFormDialog } from "@/features/agents/components/agent-form-dialog";
 import { AgentToolsPanel } from "@/features/agents/components/agent-tools-panel";
 import { DeleteAgentDialog } from "@/features/agents/components/delete-agent-dialog";
@@ -66,6 +67,7 @@ export default function AgentDetailPage() {
         <TabsList variant="line">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="tools">Tools</TabsTrigger>
+          <TabsTrigger value="documents">Knowledge Base</TabsTrigger>
           <TabsTrigger value="conversations">Conversations</TabsTrigger>
         </TabsList>
 
@@ -132,6 +134,10 @@ export default function AgentDetailPage() {
 
         <TabsContent value="tools" className="pt-4">
           <AgentToolsPanel agentId={agent.id} />
+        </TabsContent>
+
+        <TabsContent value="documents" className="pt-4">
+          <AgentDocumentsPanel agentId={agent.id} />
         </TabsContent>
 
         <TabsContent value="conversations" className="pt-4">
