@@ -6,3 +6,8 @@ import type { RoleSlug } from "../types/organization.types";
 export function canInviteMembers(role: RoleSlug | undefined): boolean {
   return role === "owner" || role === "admin";
 }
+
+// Same split as canInviteMembers — only owner/admin manage tools, member is read-only.
+export function canManageTools(role: RoleSlug | undefined): boolean {
+  return role === "owner" || role === "admin";
+}

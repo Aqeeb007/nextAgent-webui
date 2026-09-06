@@ -10,6 +10,8 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useCurrentMembership } from "@/features/organizations/hooks/use-current-membership";
+import { canManageTools } from "@/features/organizations/utils/permissions";
 import { DeleteToolDialog } from "@/features/tools/components/delete-tool-dialog";
 import { TestToolDialog } from "@/features/tools/components/test-tool-dialog";
 import { ToolFormDialog } from "@/features/tools/components/tool-form-dialog";
@@ -22,6 +24,8 @@ type ToolsView = "grid" | "table";
 
 export default function ToolsPage() {
   const { data: tools, isPending, isError, refetch } = useTools();
+  const { membership: currentMembership } = useCurrentMembership();
+  const canManage = canManageTools(currentMembership?.role.slug);
 
   const [view, setView] = useState<ToolsView>("grid");
   const [formOpen, setFormOpen] = useState(false);
@@ -40,6 +44,7 @@ export default function ToolsPage() {
   }
 
   const columns = createToolColumns({
+    canManage,
     onEdit: openEdit,
     onTest: setTestingTool,
     onDelete: setDeletingTool,
@@ -64,10 +69,17 @@ export default function ToolsPage() {
                 </TabsList>
               </Tabs>
             )}
-            <Button size="sm" className="gap-1.5" onClick={openCreate}>
-              <Plus className="size-4" />
-              Add tool
-            </Button>
+            {currentMembership &&
+              (canManage ? (
+                <Button size="sm" className="gap-1.5" onClick={openCreate}>
+                  <Plus className="size-4" />
+                  Add tool
+                </Button>
+              ) : (
+                <p className="text-xs text-muted-foreground">
+                  Only owners and admins can add tools.
+                </p>
+              ))}
           </>
         }
       />
@@ -81,12 +93,12 @@ export default function ToolsPage() {
           icon={ToolCase}
           title="No tools yet"
           description="Add a tool to let your agents call external APIs, query a database, or run custom code."
-          actionLabel="Add tool"
-          onAction={openCreate}
+          {...(canManage && { actionLabel: "Add tool", onAction: openCreate })}
         />
       ) : view === "grid" ? (
         <ToolsGrid
           tools={tools}
+          canManage={canManage}
           onEdit={openEdit}
           onTest={setTestingTool}
           onDelete={setDeletingTool}

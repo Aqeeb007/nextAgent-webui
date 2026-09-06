@@ -10,12 +10,14 @@ import { getToolTypeLabel } from "@/features/tools/utils/tool-display";
 import type { Tool } from "@/features/tools/types/tool.types";
 
 interface ToolColumnActions {
+  canManage: boolean;
   onEdit: (tool: Tool) => void;
   onTest: (tool: Tool) => void;
   onDelete: (tool: Tool) => void;
 }
 
 export function createToolColumns({
+  canManage,
   onEdit,
   onTest,
   onDelete,
@@ -91,6 +93,7 @@ export function createToolColumns({
         <div className="flex justify-end">
           <ToolRowActions
             tool={row.original}
+            canManage={canManage}
             onEdit={onEdit}
             onTest={onTest}
             onDelete={onDelete}

@@ -13,6 +13,7 @@ import type { Tool } from "@/features/tools/types/tool.types";
 
 interface ToolRowActionsProps {
   tool: Tool;
+  canManage: boolean;
   onEdit: (tool: Tool) => void;
   onTest: (tool: Tool) => void;
   onDelete: (tool: Tool) => void;
@@ -20,6 +21,7 @@ interface ToolRowActionsProps {
 
 export function ToolRowActions({
   tool,
+  canManage,
   onEdit,
   onTest,
   onDelete,
@@ -38,18 +40,22 @@ export function ToolRowActions({
         <MoreHorizontal />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => onEdit(tool)}>
-          <Pencil />
-          Edit
-        </DropdownMenuItem>
+        {canManage && (
+          <DropdownMenuItem onClick={() => onEdit(tool)}>
+            <Pencil />
+            Edit
+          </DropdownMenuItem>
+        )}
         <DropdownMenuItem onClick={() => onTest(tool)}>
           <FlaskConical />
           Test
         </DropdownMenuItem>
-        <DropdownMenuItem variant="destructive" onClick={() => onDelete(tool)}>
-          <Trash2 />
-          Delete
-        </DropdownMenuItem>
+        {canManage && (
+          <DropdownMenuItem variant="destructive" onClick={() => onDelete(tool)}>
+            <Trash2 />
+            Delete
+          </DropdownMenuItem>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );

@@ -8,13 +8,14 @@ import type { Tool } from "@/features/tools/types/tool.types";
 
 interface ToolCardProps {
   tool: Tool;
+  canManage: boolean;
   onEdit: (tool: Tool) => void;
   onTest: (tool: Tool) => void;
   onDelete: (tool: Tool) => void;
   style?: CSSProperties;
 }
 
-export function ToolCard({ tool, onEdit, onTest, onDelete, style }: ToolCardProps) {
+export function ToolCard({ tool, canManage, onEdit, onTest, onDelete, style }: ToolCardProps) {
   return (
     <Card
       style={style}
@@ -27,6 +28,7 @@ export function ToolCard({ tool, onEdit, onTest, onDelete, style }: ToolCardProp
         </CardTitle>
         <ToolRowActions
           tool={tool}
+          canManage={canManage}
           onEdit={onEdit}
           onTest={onTest}
           onDelete={onDelete}
