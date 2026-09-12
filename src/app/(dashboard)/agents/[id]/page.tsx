@@ -15,7 +15,7 @@ import { AgentFormDialog } from "@/features/agents/components/agent-form-dialog"
 import { AgentToolsPanel } from "@/features/agents/components/agent-tools-panel";
 import { DeleteAgentDialog } from "@/features/agents/components/delete-agent-dialog";
 import { useAgent } from "@/features/agents/hooks/use-agent";
-import { ConversationView } from "@/features/conversations/components/conversation-view";
+import { ConversationList } from "@/features/conversations/components/conversation-list";
 import { useCurrentOrganization } from "@/features/organizations/hooks/use-current-organization";
 
 export default function AgentDetailPage() {
@@ -141,7 +141,16 @@ export default function AgentDetailPage() {
         </TabsContent>
 
         <TabsContent value="conversations" className="pt-4">
-          <ConversationView agentId={agent.id} />
+          <div className="mx-auto h-auto w-full max-w-2xl overflow-hidden rounded-xl bg-card p-3 shadow-sm ring-1 ring-foreground/10">
+            <ConversationList
+              agentId={agent.id}
+              activeConversationId={null}
+              onSelect={(conversationId) =>
+                router.push(`/agents/${agent.id}/chat?conversationId=${conversationId}`)
+              }
+              onDeleted={() => {}}
+            />
+          </div>
         </TabsContent>
       </Tabs>
 

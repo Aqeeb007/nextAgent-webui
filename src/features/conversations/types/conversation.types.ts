@@ -67,6 +67,10 @@ export interface SendMessageResult {
 // refetching after 'messageSent' resolves.
 export type ChatStepEvent =
   | { type: "thinking" }
+  // `content` is the accumulated text so far (each wire event only carries
+  // the new fragment — use-conversation-chat.ts appends it onto the
+  // previous 'delta'/'done' step, resetting to just the fragment otherwise).
+  | { type: "delta"; content: string }
   | { type: "tool_call"; toolName: string }
   | { type: "tool_result"; toolName: string; result: unknown }
   | { type: "done"; content: string };

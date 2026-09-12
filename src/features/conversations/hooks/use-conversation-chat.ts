@@ -75,6 +75,18 @@ export function useConversationChat(agentId: string, conversationId: string | nu
     socket.on("tool_result", (event: { toolName: string; result: unknown }) =>
       setStep({ type: "tool_result", toolName: event.toolName, result: event.result })
     );
+    // Each 'delta' carries only the new fragment — append it onto whatever
+    // was already accumulated this round. A prior step of any other type
+    // (thinking, tool_result, or null at the start of a send) means this is
+    // the first fragment of a new round, so start fresh instead of carrying
+    // over stale text from an earlier round or message.
+    socket.on("delta", (event: { content: string }) =>
+      setStep((previous) => ({
+        type: "delta",
+        content:
+          (previous?.type === "delta" ? previous.content : "") + event.content,
+      }))
+    );
     socket.on("done", (event: { content: string }) =>
       setStep({ type: "done", content: event.content })
     );

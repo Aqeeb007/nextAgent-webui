@@ -48,7 +48,7 @@ export function MessageComposer({
           // handleSend/handleKeyDown already guard against sending while
           // disabled, so this only lets the next message be drafted early.
           rows={1}
-          className="max-h-40 min-h-8 flex-1 resize-none border-none bg-transparent px-0 py-1.5 shadow-none focus-visible:ring-0"
+          className="max-h-40 min-h-8 flex-1 resize-none border-none bg-transparent px-1.5 py-1.5 shadow-none focus-visible:ring-0"
         />
         <Button
           type="button"

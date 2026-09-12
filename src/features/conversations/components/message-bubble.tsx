@@ -75,7 +75,7 @@ export function MessageBubble({ message }: MessageBubbleProps) {
       <div className={cn("flex flex-col gap-1", isUser ? "items-end" : "items-start")}>
         <div
           className={cn(
-            "max-w-[min(75%,32rem)] rounded-2xl px-3.5 py-2.5 shadow-sm",
+            "w-fit max-w-[min(100%,32rem)] rounded-2xl px-3.5 py-2.5 shadow-sm",
             isUser
               ? "rounded-br-md bg-primary text-primary-foreground"
               : "rounded-bl-md bg-muted/60 text-foreground"

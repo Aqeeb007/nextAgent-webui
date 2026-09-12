@@ -7,9 +7,9 @@ import { EmptyState } from "@/components/common/EmptyState";
 import { ErrorState } from "@/components/common/ErrorState";
 import { Loading } from "@/components/common/Loading";
 import { Badge } from "@/components/ui/badge";
+import { Markdown } from "@/features/conversations/components/markdown";
 import { MessageBubble } from "@/features/conversations/components/message-bubble";
 import { MessageComposer } from "@/features/conversations/components/message-composer";
-import { TypewriterText } from "@/features/conversations/components/typewriter-text";
 import { useChatMessages } from "@/features/conversations/hooks/use-chat-messages";
 import { useConversationChat } from "@/features/conversations/hooks/use-conversation-chat";
 import type { ChatStepEvent } from "@/features/conversations/types/conversation.types";
@@ -93,16 +93,16 @@ export function ChatPanel({ agentId, conversationId }: ChatPanelProps) {
               <MessageBubble key={message.id} message={message} />
             ))}
             {isSending &&
-              (step?.type === "done" ? (
-                // The 'done' step already carries the full final text (the
-                // backend doesn't stream tokens) — reveal it client-side so
-                // it doesn't just pop in once the ack also lands.
+              (step?.type === "delta" || step?.type === "done" ? (
+                // 'delta' carries the growing live text as OpenAI streams it
+                // in; 'done' carries the same final text as the round wraps
+                // up right before the ack lands — both render the same way.
                 <div className="flex items-end gap-2.5">
                   <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-primary/25 to-primary/10 text-primary">
                     <Bot className="size-3.5" />
                   </div>
-                  <div className="max-w-[min(75%,32rem)] rounded-2xl rounded-bl-md bg-muted/60 px-3.5 py-2.5 text-foreground shadow-sm">
-                    <TypewriterText text={step.content} key={step.content} />
+                  <div className="w-fit max-w-[min(85%,32rem)] rounded-2xl rounded-bl-md bg-muted/60 px-3.5 py-2.5 text-foreground shadow-sm">
+                    <Markdown content={step.content} />
                   </div>
                 </div>
               ) : (
