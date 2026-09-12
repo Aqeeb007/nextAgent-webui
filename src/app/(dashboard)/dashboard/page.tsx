@@ -14,6 +14,10 @@ import { Card } from "@/components/ui/card";
 import { AgentFormDialog } from "@/features/agents/components/agent-form-dialog";
 import { AgentsGrid } from "@/features/agents/components/agents-grid";
 import { useAgents } from "@/features/agents/hooks/use-agents";
+import { AgentGrowthChart } from "@/features/dashboard/components/agent-growth-chart";
+import { AgentsByModelChart } from "@/features/dashboard/components/agents-by-model-chart";
+import { MemberRoleChart } from "@/features/dashboard/components/member-role-chart";
+import { useMembers } from "@/features/organizations/hooks/use-members";
 import { ToolFormDialog } from "@/features/tools/components/tool-form-dialog";
 import { useTools } from "@/features/tools/hooks/use-tools";
 import { useAuthStore } from "@/stores/auth.store";
@@ -29,6 +33,7 @@ export default function DashboardPage() {
     refetch: refetchAgents,
   } = useAgents();
   const { data: tools, isPending: toolsPending } = useTools();
+  const { data: members, isPending: membersPending, isError: membersError } = useMembers();
 
   const [agentFormOpen, setAgentFormOpen] = useState(false);
   const [toolFormOpen, setToolFormOpen] = useState(false);
@@ -79,6 +84,15 @@ export default function DashboardPage() {
             </Button>
           </div>
         </Card>
+      </div>
+
+      <div className="flex flex-col gap-4">
+        <h2 className="text-lg font-medium tracking-tight">Insights</h2>
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+          <AgentsByModelChart agents={agents} isPending={agentsPending} isError={agentsError} />
+          <AgentGrowthChart agents={agents} isPending={agentsPending} isError={agentsError} />
+          <MemberRoleChart members={members} isPending={membersPending} isError={membersError} />
+        </div>
       </div>
 
       <div className="flex flex-col gap-4">
