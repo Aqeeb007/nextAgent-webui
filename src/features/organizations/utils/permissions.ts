@@ -18,3 +18,19 @@ export function canManageTools(role: RoleSlug | undefined): boolean {
 export function canDeleteDocuments(role: RoleSlug | undefined): boolean {
   return role === "owner";
 }
+
+// Mirrors webapp-api's rbac.seed.ts: unlike tools (members get zero TOOL_*
+// grants), members here DO get workflow:create/read — they can design
+// workflows, just not change a saved one. Gates add/remove/reorder/configure
+// step controls and the builder's Save button (workflow:update).
+export function canManageWorkflows(role: RoleSlug | undefined): boolean {
+  return role === "owner" || role === "admin";
+}
+
+// Separate from canManageWorkflows: workflow:execute is withheld from
+// members specifically because a run can trigger real outbound tool calls
+// and real spend (same trust tier as tool:execute) — see rbac.seed.ts's
+// comment on WORKFLOW_EXECUTE.
+export function canExecuteWorkflows(role: RoleSlug | undefined): boolean {
+  return role === "owner" || role === "admin";
+}

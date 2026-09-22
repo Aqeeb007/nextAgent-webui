@@ -50,7 +50,7 @@ const navItems: NavItem[] = [
   { label: "Agents", href: "/agents", icon: Bot },
   { label: "Tools", href: "/tools", icon: ToolCase },
   { label: "Knowledge Base", href: "/documents", icon: BookOpen },
-  { label: "Workflows", href: "/workflows", icon: Workflow, badge: "V2", disabled: true },
+  { label: "Workflows", href: "/workflows", icon: Workflow },
   { label: "Settings", href: "/settings", icon: Settings2 },
 ];
 
