@@ -17,9 +17,11 @@ import { useAgents } from "@/features/agents/hooks/use-agents";
 import { AgentGrowthChart } from "@/features/dashboard/components/agent-growth-chart";
 import { AgentsByModelChart } from "@/features/dashboard/components/agents-by-model-chart";
 import { MemberRoleChart } from "@/features/dashboard/components/member-role-chart";
+import { UsageTrendChart } from "@/features/dashboard/components/usage-trend-chart";
 import { useMembers } from "@/features/organizations/hooks/use-members";
 import { ToolFormDialog } from "@/features/tools/components/tool-form-dialog";
 import { useTools } from "@/features/tools/hooks/use-tools";
+import { useUsageDaily } from "@/features/usage/hooks/use-usage-daily";
 import { useAuthStore } from "@/stores/auth.store";
 
 const RECENT_AGENTS_LIMIT = 6;
@@ -34,6 +36,7 @@ export default function DashboardPage() {
   } = useAgents();
   const { data: tools, isPending: toolsPending } = useTools();
   const { data: members, isPending: membersPending, isError: membersError } = useMembers();
+  const { data: dailyUsage, isPending: usagePending, isError: usageError } = useUsageDaily();
 
   const [agentFormOpen, setAgentFormOpen] = useState(false);
   const [toolFormOpen, setToolFormOpen] = useState(false);
@@ -92,6 +95,7 @@ export default function DashboardPage() {
           <AgentsByModelChart agents={agents} isPending={agentsPending} isError={agentsError} />
           <AgentGrowthChart agents={agents} isPending={agentsPending} isError={agentsError} />
           <MemberRoleChart members={members} isPending={membersPending} isError={membersError} />
+          <UsageTrendChart data={dailyUsage} isPending={usagePending} isError={usageError} />
         </div>
       </div>
 

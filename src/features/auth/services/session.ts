@@ -16,6 +16,17 @@ import type { AuthSession, RefreshTokenResponse } from "../types/auth.types";
 export function applySession(data: AuthSession) {
   useAuthStore.getState().setSession(data);
   setRefreshToken(data.refreshToken);
+
+  // Seed the org selection from what the backend resolved (last active org,
+  // or its own deterministic fallback) rather than leaving it null and
+  // letting useOrganizations()'s fallback grab whatever org happens to be
+  // first once the org list query resolves — that's what made login open a
+  // seemingly random org instead of the one the user was last in.
+  if (data.organizationId) {
+    useOrganizationStore.getState().setSelectedOrgId(data.organizationId);
+  } else {
+    useOrganizationStore.getState().clearSelectedOrg();
+  }
 }
 
 export function applyRefresh(data: RefreshTokenResponse) {

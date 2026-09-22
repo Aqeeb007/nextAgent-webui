@@ -1,6 +1,6 @@
 "use client";
 
-import { Building2, Users } from "lucide-react";
+import { Building2, Gauge, Users } from "lucide-react";
 import Link from "next/link";
 
 import { ErrorState } from "@/components/common/ErrorState";
@@ -25,13 +25,22 @@ export default function SettingsPage() {
         title="Settings"
         description="Manage your organization settings and configuration."
         actions={
-          <Link
-            href="/settings/members"
-            className={cn(buttonVariants({ variant: "outline", size: "sm" }), "gap-1.5")}
-          >
-            <Users className="size-4" />
-            Users
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link
+              href="/settings/usage"
+              className={cn(buttonVariants({ variant: "outline", size: "sm" }), "gap-1.5")}
+            >
+              <Gauge className="size-4" />
+              Usage
+            </Link>
+            <Link
+              href="/settings/members"
+              className={cn(buttonVariants({ variant: "outline", size: "sm" }), "gap-1.5")}
+            >
+              <Users className="size-4" />
+              Users
+            </Link>
+          </div>
         }
       />
 

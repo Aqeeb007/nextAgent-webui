@@ -8,6 +8,7 @@ export const endpoints = {
   organizations: {
     list: "/organizations",
     current: "/organizations/current",
+    active: "/organizations/active",
     members: "/organizations/members",
   },
   tools: {
@@ -18,6 +19,11 @@ export const endpoints = {
   documents: {
     list: "/documents",
     detail: (id: string) => `/documents/${id}`,
+  },
+  usage: {
+    summary: "/usage",
+    byAgent: "/usage/by-agent",
+    daily: "/usage/daily",
   },
   agents: {
     list: "/agents",

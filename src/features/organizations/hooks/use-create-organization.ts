@@ -1,13 +1,12 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { useOrganizationStore } from "@/stores/organization.store";
-
 import { createOrganization } from "../services/organization.service";
 import type { Organization } from "../types/organization.types";
+import { useSetActiveOrganization } from "./use-set-active-organization";
 
 export function useCreateOrganization() {
   const queryClient = useQueryClient();
-  const setSelectedOrgId = useOrganizationStore((state) => state.setSelectedOrgId);
+  const { setActiveOrganization } = useSetActiveOrganization();
 
   return useMutation({
     mutationFn: createOrganization,
@@ -19,7 +18,9 @@ export function useCreateOrganization() {
       queryClient.setQueryData<Organization[]>(["organizations"], (old) =>
         old ? [...old, organization] : [organization]
       );
-      setSelectedOrgId(organization.id);
+      // Also persists as the user's active org server-side, so a later login
+      // reopens it instead of falling back to their oldest membership.
+      setActiveOrganization(organization.id);
     },
   });
 }

@@ -31,6 +31,15 @@ export async function getCurrentOrganization() {
   return data;
 }
 
+// Persists which org is active for this user server-side, so their next
+// login reopens it instead of falling back to their oldest membership. The
+// target org is read by the backend from the X-Organization-Id header (see
+// interceptors.ts) — callers must select it in useOrganizationStore first,
+// e.g. via useSetActiveOrganization, not pass it as a body/param here.
+export async function setActiveOrganization() {
+  await apiClient.post(endpoints.organizations.active);
+}
+
 export async function listMembers() {
   const { data } = await apiClient.get<OrganizationMember[]>(
     endpoints.organizations.members
