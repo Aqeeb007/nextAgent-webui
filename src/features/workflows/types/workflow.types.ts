@@ -165,14 +165,16 @@ export interface ExecuteWorkflowPayload {
   input?: Record<string, unknown>;
 }
 
-// --- Phase-1-only, builder-local types (not part of the backend contract) ---
+// --- Builder-local view-state types (not part of the backend contract) ---
 
-// Same discriminated union as WorkflowStep, but usable before a step is
-// persisted: `id` is absent until saved, `clientId` is a stable React/React
-// Flow node key generated client-side, and `position` is pure canvas view
-// state — the backend has no coordinate field for a step at all, so this is
-// never sent anywhere; Phase 2 maps WorkflowStepDraft[] -> WorkflowStepPayload[]
-// by dropping both `clientId` and `position`.
+// Same discriminated union as WorkflowStep, but carries the client-only
+// fields the canvas needs: `clientId` is a stable React/React Flow node key
+// generated client-side, and `position` is pure canvas view state — the
+// backend has no coordinate field for a step at all, so `position` is never
+// sent anywhere (it's re-synthesized on every load via layoutFromEntry).
+// `id` is absent only for the brief window between an add-step click and its
+// POST resolving; once persisted it always has a real `id`, and every
+// mutation is applied immediately rather than batched into a later save.
 export type WorkflowStepDraft = {
   clientId: string;
   id?: string;
@@ -184,9 +186,11 @@ export type WorkflowStepDraft = {
 );
 
 // Mirrors WorkflowEdge the same way WorkflowStepDraft mirrors WorkflowStep —
-// `from`/`toClientId` reference draft steps by clientId since neither side
-// necessarily has a real id yet. Phase 2 resolves these to real step ids
-// (from each addStep response) before POSTing edges.
+// `from`/`toClientId` reference draft steps by clientId. In practice both
+// sides always resolve to a persisted step's real id before an edge can be
+// drawn at all (you can only drag a connection from an already-rendered,
+// already-persisted step node), so `clientId === id` for every edge by the
+// time addWorkflowEdge is called.
 export interface WorkflowEdgeDraft {
   clientId: string;
   id?: string;

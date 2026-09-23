@@ -2,13 +2,12 @@ import { Workflow } from "lucide-react";
 import Link from "next/link";
 import type { CSSProperties } from "react";
 
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-import type { WorkflowWithSteps } from "../types/workflow.types";
+import type { Workflow as WorkflowEntity } from "../types/workflow.types";
 
 interface WorkflowCardProps {
-  workflow: WorkflowWithSteps;
+  workflow: WorkflowEntity;
   style?: CSSProperties;
 }
 
@@ -16,7 +15,9 @@ interface WorkflowCardProps {
 // DESIGN.md flags primary-over-application on icon avatars as a known
 // issue, so new cards follow the stated rule rather than the existing
 // pattern. No per-card action menu: clicking opens the builder, which is
-// the edit surface.
+// the edit surface. `workflow` is the plain list-endpoint shape (no
+// steps/edges — GET /workflows doesn't join them), hence "Updated {date}"
+// instead of a step-count badge.
 export function WorkflowCard({ workflow, style }: WorkflowCardProps) {
   return (
     <Link href={`/workflows/${workflow.id}`} className="fade-up-item block" style={style}>
@@ -33,9 +34,14 @@ export function WorkflowCard({ workflow, style }: WorkflowCardProps) {
           <p className="line-clamp-2 min-h-10 text-sm text-muted-foreground">
             {workflow.description || "No description."}
           </p>
-          <Badge variant="outline" className="w-fit font-mono">
-            {workflow.steps.length} step{workflow.steps.length === 1 ? "" : "s"}
-          </Badge>
+          <p className="text-xs text-muted-foreground">
+            Updated{" "}
+            {new Date(workflow.updatedAt).toLocaleDateString(undefined, {
+              year: "numeric",
+              month: "short",
+              day: "numeric",
+            })}
+          </p>
         </CardContent>
       </Card>
     </Link>

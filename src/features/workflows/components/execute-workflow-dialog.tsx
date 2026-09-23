@@ -14,38 +14,33 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { getErrorMessage } from "@/lib/api/error";
 
-import type {
-  WorkflowEdgeDraft,
-  WorkflowRunWithStepRuns,
-  WorkflowStepDraft,
-} from "../types/workflow.types";
-import { mockExecuteWorkflow } from "../utils/mock-execution";
-import { WorkflowRunStatusBadge, WorkflowStepRunStatusBadge } from "./workflow-run-status-badge";
+import { useExecuteWorkflow } from "../hooks/use-execute-workflow";
+import type { WorkflowRun } from "../types/workflow.types";
+import { WorkflowRunStatusBadge } from "./workflow-run-status-badge";
 
 interface ExecuteWorkflowDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  steps: WorkflowStepDraft[];
-  edges: WorkflowEdgeDraft[];
-  entryClientId: string | null;
+  workflowId: string;
+  hasEntryStep: boolean;
 }
 
-// Modeled directly on TestToolDialog. Phase 1 has no backend to call, so
-// this runs mockExecuteWorkflow client-side instead of POST
-// /workflows/:id/execute — the setTimeout only exists to make the loading
-// state visible, same as a real request would.
+// Modeled directly on TestToolDialog. POST /workflows/:id/execute is
+// synchronous (blocks until the run finishes) and returns only the run row —
+// no stepRuns — so the result panel here shows status + output/error only;
+// step-by-step detail lives in the Runs tab (see workflow-run-history-panel).
 export function ExecuteWorkflowDialog({
   open,
   onOpenChange,
-  steps,
-  edges,
-  entryClientId,
+  workflowId,
+  hasEntryStep,
 }: ExecuteWorkflowDialogProps) {
   const [inputText, setInputText] = useState("{}");
   const [inputError, setInputError] = useState<string | null>(null);
-  const [isRunning, setIsRunning] = useState(false);
-  const [result, setResult] = useState<WorkflowRunWithStepRuns | null>(null);
+  const [result, setResult] = useState<WorkflowRun | null>(null);
+  const { mutate, isPending, error, reset } = useExecuteWorkflow();
 
   function handleRun() {
     let input: Record<string, unknown>;
@@ -62,13 +57,9 @@ export function ExecuteWorkflowDialog({
     }
 
     setInputError(null);
-    setIsRunning(true);
     setResult(null);
-
-    window.setTimeout(() => {
-      setResult(mockExecuteWorkflow(steps, edges, entryClientId, input));
-      setIsRunning(false);
-    }, 400);
+    reset();
+    mutate({ workflowId, payload: { input } }, { onSuccess: setResult });
   }
 
   function handleOpenChange(nextOpen: boolean) {
@@ -77,6 +68,7 @@ export function ExecuteWorkflowDialog({
       setInputText("{}");
       setInputError(null);
       setResult(null);
+      reset();
     }
   }
 
@@ -105,32 +97,33 @@ export function ExecuteWorkflowDialog({
                 {inputError}
               </p>
             )}
-            {!entryClientId && (
+            {!hasEntryStep && (
               <p className="text-sm text-muted-foreground">
                 Set a start step on the canvas before running this workflow.
               </p>
             )}
           </div>
 
+          {error && (
+            <p role="alert" className="text-sm text-destructive">
+              {getErrorMessage(error)}
+            </p>
+          )}
+
           {result && (
             <div className="flex min-w-0 flex-col gap-2 rounded-lg border border-border bg-muted/30 p-3">
               <div className="flex items-center gap-2">
                 <WorkflowRunStatusBadge status={result.status} />
-                <span className="text-xs text-muted-foreground">
-                  {result.stepRuns.length} step{result.stepRuns.length === 1 ? "" : "s"} run
-                </span>
-              </div>
-              <div className="flex flex-col gap-1.5">
-                {result.stepRuns.map((stepRun) => (
-                  <div key={stepRun.id} className="flex items-center gap-2 text-xs">
-                    <span className="font-mono text-muted-foreground">#{stepRun.sequence}</span>
-                    <WorkflowStepRunStatusBadge status={stepRun.status} />
-                  </div>
-                ))}
+                {result.error && (
+                  <span className="truncate text-xs text-destructive">{result.error}</span>
+                )}
               </div>
               <pre className="max-h-48 w-full min-w-0 overflow-auto rounded-md bg-background p-2 font-mono text-xs text-foreground">
                 {JSON.stringify(result.output, null, 2)}
               </pre>
+              <p className="text-xs text-muted-foreground">
+                See the Runs tab for step-by-step detail.
+              </p>
             </div>
           )}
         </div>
@@ -139,9 +132,9 @@ export function ExecuteWorkflowDialog({
           <Button variant="outline" onClick={() => handleOpenChange(false)}>
             Close
           </Button>
-          <Button onClick={handleRun} disabled={isRunning || !entryClientId}>
-            {isRunning ? <Loader2 className="animate-spin" /> : <Play />}
-            {isRunning ? "Running…" : "Run"}
+          <Button onClick={handleRun} disabled={isPending || !hasEntryStep}>
+            {isPending ? <Loader2 className="animate-spin" /> : <Play />}
+            {isPending ? "Running…" : "Run"}
           </Button>
         </DialogFooter>
       </DialogContent>

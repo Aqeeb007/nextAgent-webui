@@ -54,7 +54,7 @@ export function WorkflowEdge({
               {branchLabel}
             </span>
           )}
-          {canManage && (
+          {canManage && onRemove && (
             <button
               type="button"
               onClick={() => onRemove(id)}

@@ -15,7 +15,7 @@ import { useCallback, useEffect, useMemo } from "react";
 
 import "@xyflow/react/dist/style.css";
 
-import type { WorkflowEdgeDraft, WorkflowStepDraft, WorkflowStepType } from "../types/workflow.types";
+import type { WorkflowEdgeDraft, WorkflowStepDraft } from "../types/workflow.types";
 import {
   buildWorkflowGraph,
   FINISH_NODE_ID,
@@ -57,8 +57,9 @@ interface WorkflowCanvasProps {
   onSelect: (clientId: string) => void;
   onRemoveStep: (clientId: string) => void;
   onSetEntry: (clientId: string) => void;
-  onUnsetEntry: () => void;
-  onAddStep: (type: WorkflowStepType) => void;
+  onAddAgentStep: (agentId: string) => void;
+  onAddToolStep: (toolId: string) => void;
+  onAddConditionStep: () => void;
   onAddEdge: (fromClientId: string, branch: string, toClientId: string) => void;
   onRemoveEdge: (clientId: string) => void;
   onPositionChange: (clientId: string, position: { x: number; y: number }) => void;
@@ -73,8 +74,9 @@ function WorkflowCanvasInner({
   onSelect,
   onRemoveStep,
   onSetEntry,
-  onUnsetEntry,
-  onAddStep,
+  onAddAgentStep,
+  onAddToolStep,
+  onAddConditionStep,
   onAddEdge,
   onRemoveEdge,
   onPositionChange,
@@ -94,7 +96,6 @@ function WorkflowCanvasInner({
         onSelect,
         onRemove: onRemoveStep,
         onSetEntry,
-        onUnsetEntry,
         onRemoveEdge,
       }),
     [
@@ -106,7 +107,6 @@ function WorkflowCanvasInner({
       onSelect,
       onRemoveStep,
       onSetEntry,
-      onUnsetEntry,
       onRemoveEdge,
     ]
   );
@@ -192,7 +192,12 @@ function WorkflowCanvasInner({
       <Controls showInteractive={false} />
       {canManage && (
         <Panel position="top-left">
-          <AddStepMenu label="Add step" onSelect={onAddStep} />
+          <AddStepMenu
+            label="Add step"
+            onAddAgentStep={onAddAgentStep}
+            onAddToolStep={onAddToolStep}
+            onAddConditionStep={onAddConditionStep}
+          />
         </Panel>
       )}
     </ReactFlow>

@@ -3,21 +3,19 @@
 import { Plus, Workflow } from "lucide-react";
 import Link from "next/link";
 
+import { CardGridSkeleton } from "@/components/common/CardGridSkeleton";
 import { EmptyState } from "@/components/common/EmptyState";
+import { ErrorState } from "@/components/common/ErrorState";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { buttonVariants } from "@/components/ui/button";
 import { useCurrentMembership } from "@/features/organizations/hooks/use-current-membership";
 import { WorkflowsGrid } from "@/features/workflows/components/workflows-grid";
-import { mockWorkflows } from "@/features/workflows/utils/mock-data";
+import { useWorkflows } from "@/features/workflows/hooks/use-workflows";
 import { cn } from "@/lib/utils";
 
-// Phase 1 has no backend — mockWorkflows is the entire data source, so
-// there's no isPending/isError branch here (a synchronous seed has nothing
-// to be pending or errored about). "Create workflow" always opens a fresh
-// draft and never mutates this list; Phase 2 swaps the seed for
-// useWorkflows() and reintroduces those two branches.
 export default function WorkflowsPage() {
   const { membership } = useCurrentMembership();
+  const { data: workflows, isPending, isError, refetch } = useWorkflows();
 
   return (
     <div className="flex flex-col gap-6">
@@ -34,7 +32,11 @@ export default function WorkflowsPage() {
         }
       />
 
-      {mockWorkflows.length === 0 ? (
+      {isPending ? (
+        <CardGridSkeleton />
+      ) : isError ? (
+        <ErrorState title="Couldn't load workflows" onRetry={() => refetch()} />
+      ) : workflows.length === 0 ? (
         <EmptyState
           icon={Workflow}
           title="No workflows yet"
@@ -43,7 +45,7 @@ export default function WorkflowsPage() {
           actionHref="/workflows/new"
         />
       ) : (
-        <WorkflowsGrid workflows={mockWorkflows} />
+        <WorkflowsGrid workflows={workflows} />
       )}
     </div>
   );

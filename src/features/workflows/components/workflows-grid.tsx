@@ -1,8 +1,8 @@
-import type { WorkflowWithSteps } from "../types/workflow.types";
+import type { Workflow } from "../types/workflow.types";
 import { WorkflowCard } from "./workflow-card";
 
 interface WorkflowsGridProps {
-  workflows: WorkflowWithSteps[];
+  workflows: Workflow[];
 }
 
 export function WorkflowsGrid({ workflows }: WorkflowsGridProps) {

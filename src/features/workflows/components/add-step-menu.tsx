@@ -7,22 +7,45 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useAgents } from "@/features/agents/hooks/use-agents";
+import { useTools } from "@/features/tools/hooks/use-tools";
 import { cn } from "@/lib/utils";
 
-import type { WorkflowStepType } from "../types/workflow.types";
-import { STEP_TYPE_ICONS, STEP_TYPES } from "../utils/step-display";
+import { STEP_TYPE_ICONS } from "../utils/step-display";
 
 interface AddStepMenuProps {
-  onSelect: (type: WorkflowStepType) => void;
+  onAddAgentStep: (agentId: string) => void;
+  onAddToolStep: (toolId: string) => void;
+  onAddConditionStep: () => void;
   className?: string;
   label?: string;
 }
 
-// Trigger for adding a new, unconnected step to the canvas — the user wires
-// it into the graph afterwards by dragging a connection from/to it.
-export function AddStepMenu({ onSelect, className, label }: AddStepMenuProps) {
+const AgentIcon = STEP_TYPE_ICONS.agent;
+const ToolIcon = STEP_TYPE_ICONS.tool;
+const ConditionIcon = STEP_TYPE_ICONS.condition;
+
+// Agent/tool steps need a real agentId/toolId the moment they're created —
+// the backend validates config.agentId/config.toolId as a uuid on the very
+// first POST, so there's no "blank step, fill in later" state the way
+// Phase 1's local-only draft allowed. Picking the specific agent/tool here
+// IS the add-step action for those two types; a condition step's default
+// config has no such requirement, so it stays a single click.
+export function AddStepMenu({
+  onAddAgentStep,
+  onAddToolStep,
+  onAddConditionStep,
+  className,
+  label,
+}: AddStepMenuProps) {
+  const { data: agents } = useAgents();
+  const { data: tools } = useTools();
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
@@ -39,15 +62,46 @@ export function AddStepMenu({ onSelect, className, label }: AddStepMenuProps) {
         {label}
       </DropdownMenuTrigger>
       <DropdownMenuContent align="center">
-        {STEP_TYPES.map((item) => {
-          const Icon = STEP_TYPE_ICONS[item.value];
-          return (
-            <DropdownMenuItem key={item.value} onClick={() => onSelect(item.value)}>
-              <Icon className="size-4" />
-              {item.label}
-            </DropdownMenuItem>
-          );
-        })}
+        <DropdownMenuSub>
+          <DropdownMenuSubTrigger>
+            <AgentIcon className="size-4" />
+            Agent
+          </DropdownMenuSubTrigger>
+          <DropdownMenuSubContent>
+            {agents && agents.length === 0 ? (
+              <DropdownMenuItem disabled>No agents yet — create one first</DropdownMenuItem>
+            ) : (
+              agents?.map((agent) => (
+                <DropdownMenuItem key={agent.id} onClick={() => onAddAgentStep(agent.id)}>
+                  {agent.name}
+                </DropdownMenuItem>
+              ))
+            )}
+          </DropdownMenuSubContent>
+        </DropdownMenuSub>
+
+        <DropdownMenuSub>
+          <DropdownMenuSubTrigger>
+            <ToolIcon className="size-4" />
+            Tool
+          </DropdownMenuSubTrigger>
+          <DropdownMenuSubContent>
+            {tools && tools.length === 0 ? (
+              <DropdownMenuItem disabled>No tools yet — create one first</DropdownMenuItem>
+            ) : (
+              tools?.map((tool) => (
+                <DropdownMenuItem key={tool.id} onClick={() => onAddToolStep(tool.id)}>
+                  {tool.name}
+                </DropdownMenuItem>
+              ))
+            )}
+          </DropdownMenuSubContent>
+        </DropdownMenuSub>
+
+        <DropdownMenuItem onClick={onAddConditionStep}>
+          <ConditionIcon className="size-4" />
+          Condition
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

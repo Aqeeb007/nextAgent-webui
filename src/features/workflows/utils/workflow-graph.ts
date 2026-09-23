@@ -53,12 +53,14 @@ export function buildSourceHandles(data: StepNodeData): SourceHandleSpec[] {
 
 export interface WorkflowEdgeData extends Record<string, unknown> {
   branch: string;
-  // "start" marks the one edge from the Start marker to the entry step —
-  // drawn like a real connection, but removing it unsets the start step
-  // instead of deleting a WorkflowEdgeDraft (there's nothing to delete).
+  // "start" marks the one edge from the Start marker to the entry step.
   sourceType: WorkflowStepType | "start";
   canManage: boolean;
-  onRemove: (clientId: string) => void;
+  // Absent for the start edge: the backend has no way to explicitly clear
+  // `entryStepId` back to null once set (PATCH only accepts a valid step
+  // uuid, never null) — only re-pointing it at a different step by dragging
+  // a new connection from Start is supported, so no remove control renders.
+  onRemove?: (clientId: string) => void;
 }
 
 export type WorkflowRFEdge = Edge<WorkflowEdgeData, "workflow-edge">;
@@ -95,7 +97,6 @@ interface BuildGraphOptions {
   onSelect: (clientId: string) => void;
   onRemove: (clientId: string) => void;
   onSetEntry: (clientId: string) => void;
-  onUnsetEntry: () => void;
   onRemoveEdge: (clientId: string) => void;
 }
 
@@ -121,7 +122,6 @@ export function buildWorkflowGraph(
     onSelect,
     onRemove,
     onSetEntry,
-    onUnsetEntry,
     onRemoveEdge,
   } = options;
 
@@ -199,7 +199,6 @@ export function buildWorkflowGraph(
         branch: DEFAULT_BRANCH,
         sourceType: "start",
         canManage,
-        onRemove: () => onUnsetEntry(),
       },
     });
   }
@@ -278,8 +277,8 @@ export function nextStepPosition(existingCount: number): { x: number; y: number 
 }
 
 // One-time initial layout for a workflow loaded with steps that have no
-// client-side position yet (e.g. from mock-data.ts, or Phase 2's
-// GET /workflows/:id, which returns no coordinates at all). Layers steps by
+// client-side position yet (GET /workflows/:id returns no coordinates at
+// all). Layers steps by
 // BFS distance from the entry step so the graph reads top-to-bottom with
 // siblings spread horizontally; anything unreachable from the entry (or
 // there's no entry yet) falls back to the staggered grid above. This runs

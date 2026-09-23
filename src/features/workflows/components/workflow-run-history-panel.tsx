@@ -1,26 +1,99 @@
 "use client";
 
-import { ChevronDown, ChevronRight, History } from "lucide-react";
+import { ChevronDown, ChevronRight, History, Loader2 } from "lucide-react";
 import { useState } from "react";
 
 import { EmptyState } from "@/components/common/EmptyState";
-import { Badge } from "@/components/ui/badge";
+import { getErrorMessage } from "@/lib/api/error";
 
-import type { WorkflowRunWithStepRuns } from "../types/workflow.types";
+import { useWorkflowRun } from "../hooks/use-workflow-run";
+import type { WorkflowRun } from "../types/workflow.types";
 import { WorkflowRunStatusBadge, WorkflowStepRunStatusBadge } from "./workflow-run-status-badge";
 
 function formatDateTime(iso: string): string {
   return new Date(iso).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
 }
 
-interface WorkflowRunHistoryPanelProps {
-  runs: WorkflowRunWithStepRuns[];
+interface WorkflowRunRowProps {
+  workflowId: string;
+  run: WorkflowRun;
+  expanded: boolean;
+  onToggle: () => void;
 }
 
-// Phase 1: `runs` is seeded from utils/mock-data.ts via a plain useState in
-// the builder. Phase 2 only swaps that initializer for useWorkflowRuns(id) —
-// this rendering is unchanged either way.
-export function WorkflowRunHistoryPanel({ runs }: WorkflowRunHistoryPanelProps) {
+// Per-step detail only exists on GET /workflows/:id/runs/:runId — the list
+// endpoint this panel's `runs` prop comes from has no stepRuns — so each row
+// fetches its own detail, and only once expanded.
+function WorkflowRunRow({ workflowId, run, expanded, onToggle }: WorkflowRunRowProps) {
+  const { data: detail, isPending, isError, error } = useWorkflowRun(
+    workflowId,
+    expanded ? run.id : null
+  );
+
+  return (
+    <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+      <button
+        type="button"
+        onClick={onToggle}
+        className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-muted/30"
+      >
+        {expanded ? (
+          <ChevronDown className="size-4 shrink-0 text-muted-foreground" />
+        ) : (
+          <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
+        )}
+        <WorkflowRunStatusBadge status={run.status} />
+        <span className="flex-1 truncate text-sm text-muted-foreground">
+          {formatDateTime(run.startedAt)}
+        </span>
+      </button>
+
+      {expanded && (
+        <div className="flex flex-col gap-2 border-t border-border bg-muted/10 px-4 py-3">
+          {isPending && (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Loader2 className="size-3.5 animate-spin" />
+              Loading step detail…
+            </div>
+          )}
+          {isError && (
+            <p role="alert" className="text-sm text-destructive">
+              {getErrorMessage(error)}
+            </p>
+          )}
+          {detail?.error && (
+            <p role="alert" className="text-sm text-destructive">
+              {detail.error}
+            </p>
+          )}
+          {detail?.stepRuns.map((stepRun) => (
+            <div
+              key={stepRun.id}
+              className="flex items-center gap-2.5 rounded-lg bg-muted/30 px-2.5 py-2 text-sm"
+            >
+              <span className="font-mono text-xs text-muted-foreground">
+                #{stepRun.sequence}
+              </span>
+              <WorkflowStepRunStatusBadge status={stepRun.status} />
+              {stepRun.error && (
+                <span className="truncate text-xs text-destructive" title={stepRun.error}>
+                  {stepRun.error}
+                </span>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+interface WorkflowRunHistoryPanelProps {
+  workflowId: string;
+  runs: WorkflowRun[];
+}
+
+export function WorkflowRunHistoryPanel({ workflowId, runs }: WorkflowRunHistoryPanelProps) {
   const [expandedRunId, setExpandedRunId] = useState<string | null>(null);
 
   if (runs.length === 0) {
@@ -35,61 +108,15 @@ export function WorkflowRunHistoryPanel({ runs }: WorkflowRunHistoryPanelProps) 
 
   return (
     <div className="flex flex-col gap-2">
-      {runs.map((run) => {
-        const isExpanded = expandedRunId === run.id;
-
-        return (
-          <div
-            key={run.id}
-            className="overflow-hidden rounded-xl border border-border bg-card shadow-sm"
-          >
-            <button
-              type="button"
-              onClick={() => setExpandedRunId(isExpanded ? null : run.id)}
-              className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-muted/30"
-            >
-              {isExpanded ? (
-                <ChevronDown className="size-4 shrink-0 text-muted-foreground" />
-              ) : (
-                <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
-              )}
-              <WorkflowRunStatusBadge status={run.status} />
-              <span className="flex-1 truncate text-sm text-muted-foreground">
-                {formatDateTime(run.startedAt)}
-              </span>
-              <Badge variant="outline" className="font-mono">
-                {run.stepRuns.length} step{run.stepRuns.length === 1 ? "" : "s"}
-              </Badge>
-            </button>
-
-            {isExpanded && (
-              <div className="flex flex-col gap-2 border-t border-border bg-muted/10 px-4 py-3">
-                {run.error && (
-                  <p role="alert" className="text-sm text-destructive">
-                    {run.error}
-                  </p>
-                )}
-                {run.stepRuns.map((stepRun) => (
-                  <div
-                    key={stepRun.id}
-                    className="flex items-center gap-2.5 rounded-lg bg-muted/30 px-2.5 py-2 text-sm"
-                  >
-                    <span className="font-mono text-xs text-muted-foreground">
-                      #{stepRun.sequence}
-                    </span>
-                    <WorkflowStepRunStatusBadge status={stepRun.status} />
-                    {stepRun.error && (
-                      <span className="truncate text-xs text-destructive" title={stepRun.error}>
-                        {stepRun.error}
-                      </span>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        );
-      })}
+      {runs.map((run) => (
+        <WorkflowRunRow
+          key={run.id}
+          workflowId={workflowId}
+          run={run}
+          expanded={expandedRunId === run.id}
+          onToggle={() => setExpandedRunId((prev) => (prev === run.id ? null : run.id))}
+        />
+      ))}
     </div>
   );
 }

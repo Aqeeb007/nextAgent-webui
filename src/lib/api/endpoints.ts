@@ -47,4 +47,21 @@ export const endpoints = {
         `/agents/${agentId}/conversations/${conversationId}/messages`,
     },
   },
+  workflows: {
+    list: "/workflows",
+    detail: (id: string) => `/workflows/${id}`,
+    steps: {
+      list: (workflowId: string) => `/workflows/${workflowId}/steps`,
+      detail: (workflowId: string, stepId: string) => `/workflows/${workflowId}/steps/${stepId}`,
+    },
+    edges: {
+      list: (workflowId: string) => `/workflows/${workflowId}/edges`,
+      detail: (workflowId: string, edgeId: string) => `/workflows/${workflowId}/edges/${edgeId}`,
+    },
+    execute: (id: string) => `/workflows/${id}/execute`,
+    runs: {
+      list: (workflowId: string) => `/workflows/${workflowId}/runs`,
+      detail: (workflowId: string, runId: string) => `/workflows/${workflowId}/runs/${runId}`,
+    },
+  },
 } as const;

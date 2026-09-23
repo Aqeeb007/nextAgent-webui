@@ -34,3 +34,9 @@ export function canManageWorkflows(role: RoleSlug | undefined): boolean {
 export function canExecuteWorkflows(role: RoleSlug | undefined): boolean {
   return role === "owner" || role === "admin";
 }
+
+// Mirrors canDeleteDocuments's shape: workflow:delete in rbac.seed.ts is
+// owner-only, stricter than workflow:update's owner+admin.
+export function canDeleteWorkflows(role: RoleSlug | undefined): boolean {
+  return role === "owner";
+}
