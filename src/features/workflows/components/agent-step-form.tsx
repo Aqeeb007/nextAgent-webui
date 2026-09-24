@@ -37,6 +37,7 @@ export function AgentStepForm({ config, disabled, onChange }: AgentStepFormProps
           </p>
         ) : (
           <Select
+            items={agents?.map((agent) => ({ value: agent.id, label: agent.name })) ?? []}
             value={config.agentId || undefined}
             onValueChange={(value) => value && onChange({ ...config, agentId: value })}
             disabled={disabled || isPending}

@@ -3,7 +3,7 @@
 import { useAgents } from "@/features/agents/hooks/use-agents";
 import { useTools } from "@/features/tools/hooks/use-tools";
 
-import type { WorkflowStepDraft } from "../types/workflow.types";
+import type { WorkflowStep, WorkflowStepDraft } from "../types/workflow.types";
 
 function truncateId(id: string): string {
   if (id.length <= 12) return id;
@@ -14,7 +14,7 @@ function truncateId(id: string): string {
 // node body — parallels ToolConfigSummary. Falls back to a truncated raw id
 // when the agent/tool isn't found in the loaded org data: covers both the
 // Phase 1 mock seed's placeholder ids and the general not-yet-loaded case.
-export function WorkflowStepConfigSummary({ step }: { step: WorkflowStepDraft }) {
+export function WorkflowStepConfigSummary({ step }: { step: WorkflowStep | WorkflowStepDraft }) {
   const { data: agents } = useAgents();
   const { data: tools } = useTools();
 

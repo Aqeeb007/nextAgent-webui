@@ -1,21 +1,22 @@
 "use client";
 
 import { Plus, Workflow } from "lucide-react";
-import Link from "next/link";
+import { useState } from "react";
 
 import { CardGridSkeleton } from "@/components/common/CardGridSkeleton";
 import { EmptyState } from "@/components/common/EmptyState";
 import { ErrorState } from "@/components/common/ErrorState";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { useCurrentMembership } from "@/features/organizations/hooks/use-current-membership";
+import { CreateWorkflowDialog } from "@/features/workflows/components/create-workflow-dialog";
 import { WorkflowsGrid } from "@/features/workflows/components/workflows-grid";
 import { useWorkflows } from "@/features/workflows/hooks/use-workflows";
-import { cn } from "@/lib/utils";
 
 export default function WorkflowsPage() {
   const { membership } = useCurrentMembership();
   const { data: workflows, isPending, isError, refetch } = useWorkflows();
+  const [createOpen, setCreateOpen] = useState(false);
 
   return (
     <div className="flex flex-col gap-6">
@@ -24,10 +25,10 @@ export default function WorkflowsPage() {
         description="Chain agents, tools, and conditions into a repeatable pipeline."
         actions={
           membership && (
-            <Link href="/workflows/new" className={cn(buttonVariants({ size: "sm" }), "gap-1.5")}>
+            <Button size="sm" className="gap-1.5" onClick={() => setCreateOpen(true)}>
               <Plus className="size-4" />
               Create workflow
-            </Link>
+            </Button>
           )
         }
       />
@@ -42,11 +43,13 @@ export default function WorkflowsPage() {
           title="No workflows yet"
           description="Create a workflow to chain agents, tools, and conditions into a repeatable pipeline."
           actionLabel="Create workflow"
-          actionHref="/workflows/new"
+          onAction={() => setCreateOpen(true)}
         />
       ) : (
         <WorkflowsGrid workflows={workflows} />
       )}
+
+      <CreateWorkflowDialog open={createOpen} onOpenChange={setCreateOpen} />
     </div>
   );
 }

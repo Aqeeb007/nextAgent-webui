@@ -68,6 +68,7 @@ export function StepConfigPanel({
           edges
             .filter((edge) => edge.fromStepId === stepId && !validBranches.has(edge.branch))
             .forEach((edge) => removeEdge({ workflowId, edgeId: edge.id }));
+          onOpenChange(false);
         },
       }
     );

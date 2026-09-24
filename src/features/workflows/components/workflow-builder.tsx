@@ -1,6 +1,6 @@
 "use client";
 
-import { Play, Trash2 } from "lucide-react";
+import { Play, Settings, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 
@@ -8,10 +8,7 @@ import { ErrorState } from "@/components/common/ErrorState";
 import { Loading } from "@/components/common/Loading";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Textarea } from "@/components/ui/textarea";
 import { useCurrentMembership } from "@/features/organizations/hooks/use-current-membership";
 import {
   canDeleteWorkflows,
@@ -22,7 +19,6 @@ import { getErrorMessage } from "@/lib/api/error";
 
 import { useAddWorkflowEdge } from "../hooks/use-add-workflow-edge";
 import { useAddWorkflowStep } from "../hooks/use-add-workflow-step";
-import { useCreateWorkflow } from "../hooks/use-create-workflow";
 import { useRemoveWorkflowEdge } from "../hooks/use-remove-workflow-edge";
 import { useRemoveWorkflowStep } from "../hooks/use-remove-workflow-step";
 import { useUpdateWorkflow } from "../hooks/use-update-workflow";
@@ -41,6 +37,7 @@ import { ExecuteWorkflowDialog } from "./execute-workflow-dialog";
 import { StepConfigPanel } from "./step-config-panel";
 import { WorkflowCanvas } from "./workflow-canvas";
 import { WorkflowRunHistoryPanel } from "./workflow-run-history-panel";
+import { WorkflowSettingsSheet } from "./workflow-settings-sheet";
 
 function stepToDraft(step: WorkflowStep, position: { x: number; y: number }): WorkflowStepDraft {
   if (step.type === "agent") {
@@ -53,93 +50,17 @@ function stepToDraft(step: WorkflowStep, position: { x: number; y: number }): Wo
 }
 
 interface WorkflowBuilderProps {
-  // null -> /workflows/new (create-gate form, nothing persisted yet).
-  // A real id -> /workflows/:id (full builder, backed by useWorkflow(id)).
-  workflowId: string | null;
-}
-
-export function WorkflowBuilder({ workflowId }: WorkflowBuilderProps) {
-  if (workflowId === null) {
-    return <CreateWorkflowForm />;
-  }
-  return <WorkflowEditor workflowId={workflowId} />;
-}
-
-// Explicit create gate: nothing is POSTed until the user submits this form,
-// avoiding orphaned "Untitled workflow" rows from someone bouncing off
-// /workflows/new. On success, moves to the real builder at /workflows/:id.
-function CreateWorkflowForm() {
-  const router = useRouter();
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const { mutate, isPending, error } = useCreateWorkflow();
-
-  function handleCreate() {
-    if (!name.trim()) return;
-    mutate(
-      { name: name.trim(), description: description.trim() || undefined },
-      { onSuccess: (workflow) => router.replace(`/workflows/${workflow.id}`) }
-    );
-  }
-
-  return (
-    <div className="flex flex-col gap-6">
-      <PageHeader
-        breadcrumbs={[{ label: "Workflows", href: "/workflows" }]}
-        title="New workflow"
-        description="Name your workflow to start building it."
-      />
-
-      <div className="flex flex-col gap-4 rounded-xl border border-border bg-card p-4 shadow-sm">
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="workflow-name">Name</Label>
-          <Input
-            id="workflow-name"
-            value={name}
-            onChange={(event) => setName(event.target.value)}
-            placeholder="Untitled workflow"
-            autoFocus
-          />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="workflow-description">Description</Label>
-          <Textarea
-            id="workflow-description"
-            value={description}
-            onChange={(event) => setDescription(event.target.value)}
-            placeholder="What does this workflow do?"
-            className="min-h-16"
-          />
-        </div>
-
-        {error && (
-          <p role="alert" className="text-sm text-destructive">
-            {getErrorMessage(error)}
-          </p>
-        )}
-
-        <Button
-          onClick={handleCreate}
-          disabled={!name.trim() || isPending}
-          className="w-fit gap-1.5"
-        >
-          {isPending ? "Creating…" : "Create workflow"}
-        </Button>
-      </div>
-    </div>
-  );
-}
-
-interface WorkflowEditorProps {
   workflowId: string;
 }
 
-// The real builder for an existing workflow. Every structural graph action
-// (add/remove step, add/remove edge, set entry) persists immediately via its
-// own mutation — there's no bulk save endpoint on the backend, and no local
-// draft state to reconcile. Name/description and step config keep an
-// explicit "Save" affordance instead (see StepConfigPanel).
-function WorkflowEditor({ workflowId }: WorkflowEditorProps) {
+// Creation happens in CreateWorkflowDialog (a modal on the list page) —
+// this component only ever renders the full editor for an already-persisted
+// workflow. Every structural graph action (add/remove step, add/remove edge,
+// set entry) persists immediately via its own mutation — there's no bulk
+// save endpoint on the backend, and no local draft state to reconcile.
+// Name/description and step config keep an explicit "Save" affordance
+// instead (see StepConfigPanel).
+export function WorkflowBuilder({ workflowId }: WorkflowBuilderProps) {
   const router = useRouter();
   const { data: workflow, isPending, isError, refetch } = useWorkflow(workflowId);
   const { membership } = useCurrentMembership();
@@ -159,11 +80,8 @@ function WorkflowEditor({ workflowId }: WorkflowEditorProps) {
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
   const [executeOpen, setExecuteOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
-  // null = "not locally edited" -> falls back to the loaded workflow's
-  // value; set once the user types, cleared again after a successful save.
-  const [nameOverride, setNameOverride] = useState<string | null>(null);
-  const [descriptionOverride, setDescriptionOverride] = useState<string | null>(null);
 
   const defaultPositions = useMemo(() => {
     if (!workflow) return new Map<string, { x: number; y: number }>();
@@ -266,23 +184,6 @@ function WorkflowEditor({ workflowId }: WorkflowEditorProps) {
     setPositionOverrides((prev) => ({ ...prev, [clientId]: position }));
   }
 
-  function handleSaveDetails() {
-    if (!workflow) return;
-    setActionError(null);
-    const trimmedName = (nameOverride ?? workflow.name).trim();
-    const trimmedDescription = (descriptionOverride ?? workflow.description ?? "").trim();
-    updateWorkflowMutation.mutate(
-      { id: workflowId, payload: { name: trimmedName, description: trimmedDescription || undefined } },
-      {
-        onSuccess: () => {
-          setNameOverride(null);
-          setDescriptionOverride(null);
-        },
-        onError: (err) => setActionError(getErrorMessage(err)),
-      }
-    );
-  }
-
   if (isPending) {
     return <Loading label="Loading workflow…" />;
   }
@@ -290,10 +191,6 @@ function WorkflowEditor({ workflowId }: WorkflowEditorProps) {
   if (isError || !workflow) {
     return <ErrorState title="Couldn't load workflow" onRetry={() => refetch()} />;
   }
-
-  const name = nameOverride ?? workflow.name;
-  const description = descriptionOverride ?? workflow.description ?? "";
-  const detailsDirty = name !== workflow.name || description !== (workflow.description ?? "");
 
   return (
     <div className="flex flex-col gap-6">
@@ -315,6 +212,15 @@ function WorkflowEditor({ workflowId }: WorkflowEditorProps) {
                   Execute
                 </Button>
               )}
+              <Button
+                size="sm"
+                variant="outline"
+                className="gap-1.5"
+                onClick={() => setSettingsOpen(true)}
+              >
+                <Settings className="size-4" />
+                Settings
+              </Button>
               {canDelete && (
                 <Button
                   size="sm"
@@ -330,40 +236,6 @@ function WorkflowEditor({ workflowId }: WorkflowEditorProps) {
           )
         }
       />
-
-      <div className="flex flex-col gap-4 rounded-xl border border-border bg-card p-4 shadow-sm">
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="workflow-name">Name</Label>
-          <Input
-            id="workflow-name"
-            value={name}
-            onChange={(event) => setNameOverride(event.target.value)}
-            disabled={!canManage}
-          />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="workflow-description">Description</Label>
-          <Textarea
-            id="workflow-description"
-            value={description}
-            onChange={(event) => setDescriptionOverride(event.target.value)}
-            disabled={!canManage}
-            placeholder="What does this workflow do?"
-            className="min-h-16"
-          />
-        </div>
-        {canManage && (
-          <Button
-            size="sm"
-            variant="outline"
-            className="w-fit gap-1.5"
-            onClick={handleSaveDetails}
-            disabled={!detailsDirty || updateWorkflowMutation.isPending}
-          >
-            {updateWorkflowMutation.isPending ? "Saving…" : "Save details"}
-          </Button>
-        )}
-      </div>
 
       {actionError && (
         <p role="alert" className="text-sm text-destructive">
@@ -405,7 +277,7 @@ function WorkflowEditor({ workflowId }: WorkflowEditorProps) {
         </TabsContent>
 
         <TabsContent value="runs" className="pt-4">
-          <WorkflowRunHistoryPanel workflowId={workflowId} runs={runs ?? []} />
+          <WorkflowRunHistoryPanel workflowId={workflowId} runs={runs ?? []} steps={workflow.steps} />
         </TabsContent>
       </Tabs>
 
@@ -431,6 +303,13 @@ function WorkflowEditor({ workflowId }: WorkflowEditorProps) {
         onOpenChange={setDeleteOpen}
         workflow={workflow}
         onDeleted={() => router.push("/workflows")}
+      />
+
+      <WorkflowSettingsSheet
+        workflow={workflow}
+        open={settingsOpen}
+        onOpenChange={setSettingsOpen}
+        readOnly={!canManage}
       />
     </div>
   );

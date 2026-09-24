@@ -64,6 +64,7 @@ export function ToolStepForm({ config, disabled, onChange }: ToolStepFormProps) 
           </p>
         ) : (
           <Select
+            items={tools?.map((tool) => ({ value: tool.id, label: tool.name })) ?? []}
             value={config.toolId || undefined}
             onValueChange={(value) => value && onChange({ ...config, toolId: value })}
             disabled={disabled || isPending}

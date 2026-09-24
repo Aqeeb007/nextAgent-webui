@@ -1,22 +1,20 @@
 "use client";
 
 import { Plus } from "lucide-react";
+import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useAgents } from "@/features/agents/hooks/use-agents";
-import { useTools } from "@/features/tools/hooks/use-tools";
 import { cn } from "@/lib/utils";
 
-import { STEP_TYPE_ICONS } from "../utils/step-display";
+import type { WorkflowStepType } from "../types/workflow.types";
+import { STEP_TYPE_ICONS, STEP_TYPES } from "../utils/step-display";
+import { AddStepPickerDialog } from "./add-step-picker-dialog";
 
 interface AddStepMenuProps {
   onAddAgentStep: (agentId: string) => void;
@@ -26,16 +24,14 @@ interface AddStepMenuProps {
   label?: string;
 }
 
-const AgentIcon = STEP_TYPE_ICONS.agent;
-const ToolIcon = STEP_TYPE_ICONS.tool;
-const ConditionIcon = STEP_TYPE_ICONS.condition;
+type PickerType = Extract<WorkflowStepType, "agent" | "tool">;
 
 // Agent/tool steps need a real agentId/toolId the moment they're created —
 // the backend validates config.agentId/config.toolId as a uuid on the very
-// first POST, so there's no "blank step, fill in later" state the way
-// Phase 1's local-only draft allowed. Picking the specific agent/tool here
-// IS the add-step action for those two types; a condition step's default
-// config has no such requirement, so it stays a single click.
+// first POST, so there's no "blank step, fill in later" state. Picking
+// "Agent" or "Tool" here opens AddStepPickerDialog to choose the specific
+// one; Condition's default config has no such requirement and creates
+// immediately.
 export function AddStepMenu({
   onAddAgentStep,
   onAddToolStep,
@@ -43,66 +39,59 @@ export function AddStepMenu({
   className,
   label,
 }: AddStepMenuProps) {
-  const { data: agents } = useAgents();
-  const { data: tools } = useTools();
+  const [pickerType, setPickerType] = useState<PickerType | null>(null);
+
+  function handleSelect(type: WorkflowStepType) {
+    if (type === "condition") {
+      onAddConditionStep();
+      return;
+    }
+    setPickerType(type);
+  }
+
+  function handlePickerConfirm(id: string) {
+    if (pickerType === "agent") onAddAgentStep(id);
+    if (pickerType === "tool") onAddToolStep(id);
+    setPickerType(null);
+  }
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger
-        render={
-          <Button
-            type="button"
-            variant="outline"
-            size={label ? "sm" : "icon-sm"}
-            className={cn("nodrag rounded-full border-dashed", className)}
-          />
-        }
-      >
-        <Plus className="size-3.5" />
-        {label}
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="center">
-        <DropdownMenuSub>
-          <DropdownMenuSubTrigger>
-            <AgentIcon className="size-4" />
-            Agent
-          </DropdownMenuSubTrigger>
-          <DropdownMenuSubContent>
-            {agents && agents.length === 0 ? (
-              <DropdownMenuItem disabled>No agents yet — create one first</DropdownMenuItem>
-            ) : (
-              agents?.map((agent) => (
-                <DropdownMenuItem key={agent.id} onClick={() => onAddAgentStep(agent.id)}>
-                  {agent.name}
-                </DropdownMenuItem>
-              ))
-            )}
-          </DropdownMenuSubContent>
-        </DropdownMenuSub>
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger
+          render={
+            <Button
+              type="button"
+              variant="outline"
+              size={label ? "sm" : "icon-sm"}
+              className={cn("nodrag rounded-full border-dashed", className)}
+            />
+          }
+        >
+          <Plus className="size-3.5" />
+          {label}
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="center">
+          {STEP_TYPES.map((item) => {
+            const Icon = STEP_TYPE_ICONS[item.value];
+            return (
+              <DropdownMenuItem key={item.value} onClick={() => handleSelect(item.value)}>
+                <Icon className="size-4" />
+                {item.label}
+              </DropdownMenuItem>
+            );
+          })}
+        </DropdownMenuContent>
+      </DropdownMenu>
 
-        <DropdownMenuSub>
-          <DropdownMenuSubTrigger>
-            <ToolIcon className="size-4" />
-            Tool
-          </DropdownMenuSubTrigger>
-          <DropdownMenuSubContent>
-            {tools && tools.length === 0 ? (
-              <DropdownMenuItem disabled>No tools yet — create one first</DropdownMenuItem>
-            ) : (
-              tools?.map((tool) => (
-                <DropdownMenuItem key={tool.id} onClick={() => onAddToolStep(tool.id)}>
-                  {tool.name}
-                </DropdownMenuItem>
-              ))
-            )}
-          </DropdownMenuSubContent>
-        </DropdownMenuSub>
-
-        <DropdownMenuItem onClick={onAddConditionStep}>
-          <ConditionIcon className="size-4" />
-          Condition
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+      {pickerType && (
+        <AddStepPickerDialog
+          type={pickerType}
+          open={pickerType !== null}
+          onOpenChange={(open) => !open && setPickerType(null)}
+          onConfirm={handlePickerConfirm}
+        />
+      )}
+    </>
   );
 }

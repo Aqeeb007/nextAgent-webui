@@ -206,7 +206,7 @@ function WorkflowCanvasInner({
 
 export function WorkflowCanvas(props: WorkflowCanvasProps) {
   return (
-    <div className="h-140 w-full overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+    <div className="h-[calc(100svh-16rem)] min-h-140 w-full overflow-hidden rounded-xl border border-border bg-card shadow-sm">
       <ReactFlowProvider>
         <WorkflowCanvasInner {...props} />
       </ReactFlowProvider>

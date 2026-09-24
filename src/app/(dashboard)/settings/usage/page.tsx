@@ -1,6 +1,6 @@
 "use client";
 
-import { MessageSquare, ToolCase, Database } from "lucide-react";
+import { Bot, Layers, MessageSquare, ToolCase, Database } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { ErrorState } from "@/components/common/ErrorState";
@@ -15,7 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useAgents } from "@/features/agents/hooks/use-agents";
-import { UsageByAgentTable } from "@/features/usage/components/usage-by-agent-table";
+import { UsageTable } from "@/features/usage/components/usage-table";
 import { useUsageByAgent } from "@/features/usage/hooks/use-usage-by-agent";
 import { useUsageSummary } from "@/features/usage/hooks/use-usage-summary";
 import {
@@ -24,6 +24,7 @@ import {
   type UsagePeriod,
 } from "@/features/usage/utils/usage-period";
 import { pivotUsageByAgent } from "@/features/usage/utils/usage-by-agent";
+import { pivotUsageBySource } from "@/features/usage/utils/usage-by-source";
 import { formatUsageQuantity, quantityFor } from "@/features/usage/utils/usage-summary";
 
 export default function UsagePage() {
@@ -50,6 +51,7 @@ export default function UsagePage() {
   const isError = summaryError || byAgentError;
 
   const agentRows = useMemo(() => pivotUsageByAgent(byAgent, agents), [byAgent, agents]);
+  const sourceRows = useMemo(() => pivotUsageBySource(byAgent), [byAgent]);
 
   const chatTokens = quantityFor(summary, "chat_completion");
   const embeddingTokens = quantityFor(summary, "embedding");
@@ -123,8 +125,25 @@ export default function UsagePage() {
           </div>
 
           <div className="flex flex-col gap-4">
+            <h2 className="text-lg font-medium tracking-tight">By source</h2>
+            <UsageTable
+              rows={sourceRows}
+              labelHeader="Source"
+              emptyIcon={Layers}
+              emptyTitle="No usage yet"
+              emptyDescription="Usage will show up here once an agent has a conversation, a document is embedded, or a workflow runs."
+            />
+          </div>
+
+          <div className="flex flex-col gap-4">
             <h2 className="text-lg font-medium tracking-tight">By agent</h2>
-            <UsageByAgentTable rows={agentRows} />
+            <UsageTable
+              rows={agentRows}
+              labelHeader="Agent"
+              emptyIcon={Bot}
+              emptyTitle="No usage yet"
+              emptyDescription="Usage will show up here once an agent has a conversation or calls a tool."
+            />
           </div>
         </>
       )}
